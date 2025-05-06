@@ -1,0 +1,351 @@
+/* Base Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Header Styling */
+.header {
+    background-color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+
+.header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: auto;
+    text-decoration: none;
+    color: black;
+}
+
+.header img {
+    height: 40px;
+}
+
+.header .search-bar {
+    flex: 1;
+    margin: 0 20px;
+}
+
+.header .search-bar input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.header .icons {
+    display: flex;
+    align-items: center;
+}
+
+.header .icons i {
+    margin: 0 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    padding: 20px;
+    border-right: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.sidebar .profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .profile img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.sidebar .profile .name {
+    font-weight: 500;
+}
+
+.sidebar .info {
+    margin-bottom: 20px;
+}
+
+.sidebar .info .item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sidebar .info .item i {
+    margin-right: 10px;
+    color: #333;
+}
+
+/* Content Styling */
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+.content .tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.content .tabs .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.content .tabs .tab.active {
+    border-bottom: 2px solid #0d0e0d;
+    color: #0e0e0e;
+}
+
+.content .profile-info {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.content .profile-info img {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background-color: #e0e0e0;
+}
+
+.content .profile-info .info-group {
+    margin-bottom: 20px;
+}
+
+.content .profile-info .info-group .label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.content .profile-info .info-group .value {
+    display: flex;
+    align-items: center;
+}
+
+.content .profile-info .info-group .value span {
+    margin-right: 10px;
+}
+
+.content .profile-info .info-group .value .edit {
+    color: #0d0d0d;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-bar input {
+        margin-top: 10px;
+        width: 100%; /* Full width on smaller screens */
+    }
+
+    .sidebar {
+        display: none; /* Hide sidebar on smaller screens */
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .content .tabs {
+        flex-wrap: wrap;
+    }
+
+    .add-address-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .content .profile-info img {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 10px;
+    }
+
+    .header .icons i {
+        margin: 0 5px;
+    }
+
+    .content .tabs .tab {
+        padding: 5px 10px;
+    }
+
+    .content .profile-info {
+        padding: 10px;
+    }
+
+    .content .profile-info img {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Address List */
+.address-list-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.address-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.address-list li {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.address-list li:last-child {
+    border-bottom: none;
+}
+
+/* Payment Status */
+.payment-status {
+    padding: 20px;
+}
+
+.payment-status h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center; /* Center-align the title for smaller screens */
+}
+
+.payment-table {
+    width: 100%;
+    overflow-x: auto; /* Allow horizontal scrolling for small screens */
+}
+
+.payment-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Roboto', sans-serif;
+    min-width: 600px; /* Ensure a minimum width for table content */
+}
+
+.payment-table th, .payment-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.payment-table th {
+    background-color: #f4f4f4;
+    font-weight: 500;
+    text-align: center; /* Center-align headers for better readability */
+}
+
+.payment-table td {
+    font-size: 14px;
+}
+
+.payment-table a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.payment-table a:hover {
+    text-decoration: underline;
+}
+
+.status-paid {
+    color: green;
+    font-weight: bold;
+    text-align: center; /* Center-align status text */
+}
+
+.status-unpaid {
+    color: red;
+    font-weight: bold;
+    text-align: center; /* Center-align status text */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .payment-status {
+        padding: 15px;
+    }
+
+    .payment-status h2 {
+        font-size: 20px;
+    }
+
+    .payment-table th, .payment-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-status h2 {
+        font-size: 18px;
+    }
+
+    .payment-table {
+        overflow-x: auto; /* Add scroll on small screens */
+    }
+
+    .payment-table table {
+        font-size: 12px;
+    }
+
+    .payment-table th, .payment-table td {
+        padding: 6px;
+        font-size: 10px;
+    }
+
+    .payment-table th {
+        font-size: 12px;
+    }
+}
+
+.footer {
+    max-width: 100%;
+    padding: 100px 20px 0;
+    background-color: #595959;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+}

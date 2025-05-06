@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteBase /projek/
+
+# Redirect requests to index.php with the 'page' parameter
