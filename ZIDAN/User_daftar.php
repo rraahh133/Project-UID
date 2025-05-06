@@ -1,3 +1,34 @@
+<?php
+session_start();
+include ('../database/db_connect.php'); // Include your PDO connection
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+// Fetch user data if needed
+$user_id = $_SESSION['user_id'];
+$stmtUser = $pdo->prepare("
+SELECT users.*, user_information.*
+FROM users
+LEFT JOIN user_information ON users.user_id = user_information.user_id
+WHERE users.user_id = :id
+");
+$stmtUser->bindParam(':id', $user_id, PDO::PARAM_INT);
+$stmtUser->execute();
+$user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+// Fetch user addresses
+$stmtAddr = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = :id");
+$stmtAddr->bindParam(':id', $user_id, PDO::PARAM_INT);
+$stmtAddr->execute();
+$addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+
+
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,139 +39,160 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet" />
 </head>
 
-<body class="bg-gray-100 font-roboto">
+<body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-700 shadow p-4 flex justify-between items-center">
+        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white">
-                <a class="logo" href="./../index.php">
-                    SiBantu
-                </a>
+                <a href="./../index.php">SiBantu</a>
             </h1>
-            <div class="flex items-center space-x-4">
-                <i class="fas fa-bell text-white"></i>
-                <i class="fas fa-envelope text-white"></i>
-                <img alt="User Profile" class="rounded-full" height="40"
-                    src="https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg"
-                    width="40" />
+            <div class="flex items-center gap-4">
+                <i class="fas fa-bell text-white text-lg"></i>
+                <i class="fas fa-envelope text-white text-lg"></i>
+                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
             </div>
         </header>
+
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
-            <div class="w-full md:w-1/5 bg-gray-200 p-4 shadow">
-                <div class="flex items-center mb-4 bg-white p-4 rounded">
-                    <img alt="User Profile" class="rounded-full mr-2" height="50"
-                        src="https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg"
-                        width="50" />
+            <aside class="w-full md:w-64 bg-white p-6 shadow-md">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
                     <div>
-                        <h2 class="text-xl font-bold text-black">
-                            Zaidan
-                        </h2>
-                        <p class="text-gray-600">
-                            Member Silver
-                        </p>
+                        <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
+                        <p class="text-gray-500 text-sm">Member Silver</p>
                     </div>
                 </div>
-                <!-- Dropdown Categories -->
-                <div class="mb-4">
-                    <div class="relative">
-                        <button class="w-full text-left bg-white text-gray-700 px-4 py-2 rounded"
-                            onclick="toggleDropdown('pembayaranDropdown')">
-                            Transaksi
-                            <i class="fas fa-chevron-down float-right mt-1"></i>
-                        </button>
-                        <div class="hidden mt-2 bg-white shadow rounded" id="pembayaranDropdown">
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="User_status.php">
-                                Status Pembayaran
-                            </a>
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                href="User_Riwayat Transaksi.php">
-                                Riwayat Transaksi
-                            </a>
-                        </div>
+
+                <!-- Dropdown -->
+                <div>
+                    <button onclick="toggleDropdown('transaksiDropdown')" class="w-full bg-gray-100 px-4 py-2 rounded flex justify-between items-center text-gray-700 font-medium hover:bg-gray-200">
+                        Transaksi
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                    <div id="transaksiDropdown" class="hidden mt-2">
+                        <a href="User_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
+                        <a href="User_Riwayat Transaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>
-            </div>
+            </aside>
+
             <!-- Main Content -->
             <main class="flex-1 p-6">
-                <div class="bg-white p-4 rounded shadow mb-6">
-                    <nav class="flex space-x-4">
-                        <a class="text-gray-600" href="User_dashboard.php">
-                            Biodata Diri
-                        </a>
-                        <a class="text-gray-800 font-bold" href="User_daftar.php">
-                            Daftar Alamat
-                        </a>
-                    </nav>
-                </div>
-                <div class="bg-white p-6 rounded shadow">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <!-- Tabs -->
+                    <div class="flex gap-6 border-b pb-4 mb-6">
+                        <a href="User_dashboard.php" class="text-gray-500 hover:text-blue-600">Biodata Diri</a>
+                        <a href="User_daftar.php" class="text-blue-600 font-semibold">Daftar Alamat</a>
+                    </div>
+
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">
-                            Daftar Alamat
-                        </h2>
+                        <h2 class="text-xl font-bold">Daftar Alamat</h2>
                         <div>
-                            <button
-                                class="bg-green-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-green-600 transition duration-300"
-                                onclick="openAddModal()">
+                            <button class="bg-gray-800 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-700 transition duration-300" onclick="openAddModal()">
                                 Tambah Alamat
                             </button>
                         </div>
                     </div>
                     <div id="addressList">
+                    <?php
+                    if ($addresses) {
+                        foreach ($addresses as $address) {
+                    ?>
                         <div class="bg-white p-6 rounded shadow mb-4">
                             <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-bold">Alamat Lengkap</h2>
+                                <h2 class="text-xl font-bold">
+                                    <?php echo trim(strtolower($address['keterangan'])) === 'rumah' ? 'Alamat Rumah' : 'Alamat Kantor'; ?>
+                                </h2>
                                 <div>
-                                    <button
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300 mr-2"
-                                        onclick="editAddress(this)">Edit Alamat</button>
-                                    <button
-                                        class="bg-red-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-600 transition duration-300"
-                                        onclick="confirmDeleteAddress(this)">Hapus Alamat</button>
+                                    <button class="bg-gray-800 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-700 transition duration-300 mr-2" onclick="editAddress(this)">Edit Alamat</button>
+                                    <button class="bg-red-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-600 transition duration-300" onclick="confirmDeleteAddress(this)">Hapus Alamat</button>
                                 </div>
                             </div>
-                            <div class="address-container">
-                                <p class="addressText">Jl. Merdeka No. 10, Jakarta</p>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded shadow mb-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-bold">Alamat Lengkap</h2>
-                                <div>
-                                    <button
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300 mr-2"
-                                        onclick="editAddress(this)">Edit Alamat</button>
-                                    <button
-                                        class="bg-red-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-600 transition duration-300"
-                                        onclick="confirmDeleteAddress(this)">Hapus Alamat</button>
+                            <div class="address-container space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-user text-gray-600"></i>
+                                    <p class="font-semibold">Nama Penerima:</p>
+                                    <p class="addressName"><?php echo $address['nama_penerima']; ?></p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-phone text-gray-600"></i>
+                                    <p class="font-semibold">Nomor Telepon:</p>
+                                    <p class="addressPhone"><?php echo $address['nomor_telepon']; ?></p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-map-marker-alt text-gray-600"></i>
+                                    <p class="font-semibold">Alamat Lengkap:</p>
+                                    <p class="addressText"><?php echo $address['alamat_lengkap']; ?></p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-gray-600"></i>
+                                    <p class="font-semibold">Keterangan:</p>
+                                    <p class="addressNote"><?php echo $address['keterangan']; ?></p>
                                 </div>
                             </div>
-                            <div class="address-container">
-                                <p class="addressText">Jl. Sudirman No. 20, Bandung</p>
-                            </div>
                         </div>
-                    </div>
+                    <?php
+                        }
+                    }
+                    ?>
+                </div>
                 </div>
             </main>
         </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-10 mt-auto">
+            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div>
+                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
+                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li><a href="index.php" class="hover:underline">Home</a></li>
+                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
+                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
     </div>
+
     <!-- Edit Modal -->
     <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden" id="editModal">
         <div class="bg-white p-6 rounded shadow-lg w-11/12 md:w-1/3">
-            <h2 class="text-xl font-bold mb-4">
-                Edit Alamat
-            </h2>
-            <input class="w-full p-2 border border-gray-300 rounded mb-4" id="editAddressInput"
-                placeholder="Masukkan alamat baru" type="text" />
-            <div class="flex justify-end">
-                <button
-                    class="bg-gray-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-600 transition duration-300 mr-2"
-                    onclick="closeModal()">
+            <h2 class="text-xl font-bold mb-4">Edit Alamat</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nama Penerima</label>
+                    <input class="w-full p-2 border border-gray-300 rounded" id="editNameInput" type="text" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Nomor Telepon</label>
+                    <input class="w-full p-2 border border-gray-300 rounded" id="editPhoneInput" type="tel" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Alamat Lengkap</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded" id="editAddressInput" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Keterangan</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded" id="editNoteInput" rows="2" placeholder="Contoh: Rumah warna putih, pagar hitam"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button class="bg-gray-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-600 transition duration-300 mr-2" onclick="closeModal()">
                     Batal
                 </button>
-                <button
-                    class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300"
-                    onclick="confirmEditAddress()">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300" onclick="confirmEditAddress()">
                     Simpan
                 </button>
             </div>
@@ -149,20 +201,30 @@
     <!-- Add Modal -->
     <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden" id="addModal">
         <div class="bg-white p-6 rounded shadow-lg w-11/12 md:w-1/3">
-            <h2 class="text-xl font-bold mb-4">
-                Tambah Alamat
-            </h2>
-            <input class="w-full p-2 border border-gray-300 rounded mb-4" id="addAddressInput"
-                placeholder="Masukkan alamat baru" type="text" />
-            <div class="flex justify-end">
-                <button
-                    class="bg-gray-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-600 transition duration-300 mr-2"
-                    onclick="closeAddModal()">
+            <h2 class="text-xl font-bold mb-4">Tambah Alamat</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nama Penerima</label>
+                    <input class="w-full p-2 border border-gray-300 rounded" id="addNameInput" type="text" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Nomor Telepon</label>
+                    <input class="w-full p-2 border border-gray-300 rounded" id="addPhoneInput" type="tel" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Alamat Lengkap</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded" id="addAddressInput" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Keterangan</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded" id="addNoteInput" rows="2" placeholder="Contoh: Rumah warna putih, pagar hitam"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button class="bg-gray-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-600 transition duration-300 mr-2" onclick="closeAddModal()">
                     Batal
                 </button>
-                <button
-                    class="bg-green-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-green-600 transition duration-300"
-                    onclick="addAddress()">
+                <button class="bg-green-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-green-600 transition duration-300" onclick="addAddress()">
                     Tambah
                 </button>
             </div>
@@ -215,58 +277,19 @@
     <div class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg hidden" id="notification">
         Alamat berhasil diubah!
     </div>
-    <!-- Footer Section -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="px-4 mx-auto max-w-screen-xl">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Logo and Description -->
-                <div>
-                    <h2 class="text-2xl font-bold">
-                        SiBantu
-                    </h2>
-                    <p class="mt-4 text-sm">
-                        Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.
-                    </p>
-                </div>
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-semibold">
-                        Quick Links
-                    </h3>
-                    <nav class="mt-4 space-y-2">
-                        <a class="block hover:underline" href="index.php">
-                            Home
-                        </a>
-                        <a class="block hover:underline" href="faq.php">
-                            FAQ
-                        </a>
-                    </nav>
-                </div>
-                <!-- Contact Us -->
-                <div>
-                    <h3 class="text-lg font-semibold">
-                        Contact Us
-                    </h3>
-                    <nav class="mt-4 space-y-2">
-                        <a class="block hover:underline" href="mailto:support@sibantu.com">
-                            support@sibantu.com
-                        </a>
-                        <a class="block hover:underline" href="tel:+6281234567890">
-                            +62 812 3456 7890
-                        </a>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </footer>
     <script>
         let currentEditElement = null;
         let currentDeleteElement = null;
 
         function editAddress(button) {
-            currentEditElement = button.closest('.bg-white').querySelector('.addressText');
-            const addressText = currentEditElement.textContent;
-            document.getElementById('editAddressInput').value = addressText;
+            const addressCard = button.closest('.bg-white');
+            currentEditElement = addressCard;
+            
+            document.getElementById('editNameInput').value = addressCard.querySelector('.addressName').textContent;
+            document.getElementById('editPhoneInput').value = addressCard.querySelector('.addressPhone').textContent;
+            document.getElementById('editAddressInput').value = addressCard.querySelector('.addressText').textContent;
+            document.getElementById('editNoteInput').value = addressCard.querySelector('.addressNote').textContent;
+            
             document.getElementById('editModal').classList.remove('hidden');
         }
 
@@ -276,11 +299,21 @@
         }
 
         function saveAddress() {
-            const newAddress = document.getElementById('editAddressInput').value;
-            if (newAddress) {
-                currentEditElement.textContent = newAddress;
-                closeConfirmModal();
-                showNotification('Alamat berhasil diubah!');
+            if (currentEditElement) {
+                const newName = document.getElementById('editNameInput').value;
+                const newPhone = document.getElementById('editPhoneInput').value;
+                const newAddress = document.getElementById('editAddressInput').value;
+                const newNote = document.getElementById('editNoteInput').value;
+
+                if (newName && newPhone && newAddress) {
+                    currentEditElement.querySelector('.addressName').textContent = newName;
+                    currentEditElement.querySelector('.addressPhone').textContent = newPhone;
+                    currentEditElement.querySelector('.addressText').textContent = newAddress;
+                    currentEditElement.querySelector('.addressNote').textContent = newNote;
+                    
+                    closeConfirmModal();
+                    showNotification('Alamat berhasil diubah!');
+                }
             }
         }
 
@@ -300,27 +333,83 @@
             document.getElementById('confirmModal').classList.add('hidden');
         }
 
-        function addAddress() {
+        async function addAddress() {
+            const newName = document.getElementById('addNameInput').value;
+            const newPhone = document.getElementById('addPhoneInput').value;
             const newAddress = document.getElementById('addAddressInput').value;
-            if (newAddress) {
-                const addressList = document.getElementById('addressList');
-                const newAddressCard = `
-                <div class="bg-white p-6 rounded shadow mb-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">Alamat Lengkap</h2>
-                        <div>
-                            <button class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300 mr-2" onclick="editAddress(this)">Edit Alamat</button>
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-600 transition duration-300" onclick="confirmDeleteAddress(this)">Hapus Alamat</button>
-                        </div>
-                    </div>
-                    <div class="address-container">
-                        <p class="addressText">${newAddress}</p>
-                    </div>
-                </div>
-            `;
-                addressList.insertAdjacentHTML('beforeend', newAddressCard);
-                closeAddModal();
-                showNotification('Alamat berhasil ditambahkan!');
+            const newNote = document.getElementById('addNoteInput').value; // keterangan
+
+            if (newName && newPhone && newAddress) {
+                // Prepare form data to send to the server
+                const formData = new FormData();
+                formData.append("action", "add");
+                formData.append("nama_penerima", newName);
+                formData.append("nomor_telepon", newPhone);
+                formData.append("alamat_lengkap", newAddress);
+                formData.append("keterangan", newNote);
+
+                try {
+                    // Send the data to the server using fetch
+                    const response = await fetch('../database/address.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    // Check if the response is successful
+                    const data = await response.json();
+                    console.log(response); // Log the response data
+
+                    if (data.success) {
+                        // Successfully added the address, now update the UI
+                        const addressList = document.getElementById('addressList');
+                        const addressTitle = newNote === 'Rumah' ? 'Alamat Rumah' : 'Alamat Kantor'; // Set title based on keterangan
+
+                        const newAddressCard = `
+                            <div class="bg-white p-6 rounded shadow mb-4" data-id="${data.address_id}">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-bold">${addressTitle}</h2>  <!-- Dynamic title based on keterangan -->
+                                    <div>
+                                        <button class="bg-gray-800 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-700 transition duration-300 mr-2" onclick="editAddress(this)">Edit Alamat</button>
+                                        <button class="bg-red-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-600 transition duration-300" onclick="confirmDeleteAddress(this)">Hapus Alamat</button>
+                                    </div>
+                                </div>
+                                <div class="address-container space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-user text-gray-600"></i>
+                                        <p class="font-semibold">Nama Penerima:</p>
+                                        <p class="addressName">${newName}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-phone text-gray-600"></i>
+                                        <p class="font-semibold">Nomor Telepon:</p>
+                                        <p class="addressPhone">${newPhone}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-map-marker-alt text-gray-600"></i>
+                                        <p class="font-semibold">Alamat Lengkap:</p>
+                                        <p class="addressText">${newAddress}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-info-circle text-gray-600"></i>
+                                        <p class="font-semibold">Keterangan:</p>
+                                        <p class="addressNote">${newNote}</p>  <!-- Display keterangan -->
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        addressList.insertAdjacentHTML('beforeend', newAddressCard);
+                        closeAddModal();  // Assuming you have a function to close the modal
+                        showNotification('Alamat berhasil ditambahkan!');  // Assuming you have a function to show notifications
+                    } else {
+                        console.error("Failed to add address:", data.message);
+                        alert("Gagal menambahkan alamat: " + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert("Terjadi kesalahan saat menambahkan alamat.");
+                }
+            } else {
+                alert("Harap isi semua kolom yang diperlukan!");
             }
         }
 
@@ -360,5 +449,4 @@
         }
     </script>
 </body>
-
 </html>

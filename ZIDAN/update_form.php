@@ -83,34 +83,34 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
                     <!-- Name Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="name">Nama</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['name']); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['name'] ?? ''); ?>" />
                     </div>
 
                     <!-- Birthdate Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="birthdate">Tanggal Lahir</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['birthdate']); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['birthdate'] ?? ''); ?>" />
                     </div>
 
                     <!-- Gender Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="gender">Jenis Kelamin</label>
                         <select class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="gender" name="gender">
-                            <option value="male" <?= $user['gender'] == 'male' ? 'selected' : ''; ?>>Laki-laki</option>
-                            <option value="female" <?= $user['gender'] == 'female' ? 'selected' : ''; ?>>Perempuan</option>
+                            <option value="male" <?= ($user['gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Laki-laki</option>
+                            <option value="female" <?= ($user['gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Perempuan</option>
                         </select>
                     </div>
 
                     <!-- Email Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="email">Email</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($user['email']); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($user['email'] ?? ''); ?>" />
                     </div>
 
                     <!-- Phone Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="phone">Nomor Telepon</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['phone']); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['phone'] ?? ''); ?>" />
                     </div>
 
                     <!-- Modal for Cropping & Live Preview -->
