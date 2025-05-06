@@ -1,10 +1,5 @@
 <?php
 session_start();
-if (!isset($_SESSION['usertype']) || $_SESSION['usertype'] !== 'seller') {
-    http_response_code(403);
-    exit("Access denied.");
-}
-
 ?>
 
 <html lang="en">
@@ -49,7 +44,7 @@ if (!isset($_SESSION['usertype']) || $_SESSION['usertype'] !== 'seller') {
                         <i class="fas fa-chevron-down ml-2"></i>
                     </button>
                     <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="provider_add-service.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Tambah Layanan</a>
+                        <a href="provider_add-service.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Service</a>
                         <a href="provider_transaction-history.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>

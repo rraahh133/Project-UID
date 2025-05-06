@@ -99,7 +99,7 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
                     if ($addresses) {
                         foreach ($addresses as $address) {
                     ?>
-                        <div class="bg-white p-6 rounded shadow mb-4">
+                        <div class="bg-white p-6 rounded shadow mb-4" data-id="<?php echo $address['id']; ?>">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-xl font-bold">
                                     <?php echo trim(strtolower($address['keterangan'])) === 'rumah' ? 'Alamat Rumah' : 'Alamat Kantor'; ?>
@@ -230,27 +230,60 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
-    <!-- Confirmation Modal -->
-    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden" id="confirmModal">
-        <div class="bg-white p-6 rounded shadow-lg w-11/12 md:w-1/3">
-            <h2 class="text-xl font-bold mb-4">
-                Konfirmasi
-            </h2>
-            <p class="mb-4">Apakah Anda yakin ingin mengedit alamat ini?</p>
-            <div class="flex justify-end">
-                <button
-                    class="bg-gray-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-600 transition duration-300 mr-2"
-                    onclick="closeConfirmModal()">
-                    Batal
-                </button>
-                <button
-                    class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300"
-                    onclick="saveAddress()">
-                    Ya, Simpan
-                </button>
+    <!-- Confirmation Modal with Edit Summary -->
+    <div class="fixed inset-0 bg-gray-700 bg-opacity-60 flex items-center justify-center hidden z-50" id="confirmModal">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-11/12 md:w-1/3">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Konfirmasi Perubahan</h2>
+            <p class="text-gray-600 mb-6 text-center">Silakan tinjau kembali informasi berikut sebelum menyimpan perubahan.</p>
+
+            <!-- Edit Summary -->
+            <div id="editSummary" class="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-3 mb-6">
+            <div class="flex items-start gap-2">
+                <i class="fas fa-user text-gray-500 mt-1"></i>
+                <div>
+                <p class="text-sm text-gray-500">Nama Penerima</p>
+                <p class="font-semibold text-gray-800" id="summaryName">-</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <i class="fas fa-phone text-gray-500 mt-1"></i>
+                <div>
+                <p class="text-sm text-gray-500">Nomor Telepon</p>
+                <p class="font-semibold text-gray-800" id="summaryPhone">-</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <i class="fas fa-map-marker-alt text-gray-500 mt-1"></i>
+                <div>
+                <p class="text-sm text-gray-500">Alamat Lengkap</p>
+                <p class="font-semibold text-gray-800" id="summaryAddress">-</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <i class="fas fa-info-circle text-gray-500 mt-1"></i>
+                <div>
+                <p class="text-sm text-gray-500">Keterangan</p>
+                <p class="font-semibold text-gray-800" id="summaryNote">-</p>
+                </div>
             </div>
         </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end">
+        <button
+            class="bg-gray-400 text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-500 transition duration-300 mr-2"
+            onclick="closeConfirmModal()">
+            Batal
+        </button>
+        <button
+            class="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition duration-300"
+            onclick="saveAddress()">
+            Ya, Simpan
+        </button>
+        </div>
     </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden"
         id="deleteConfirmModal">
@@ -282,38 +315,111 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
         let currentDeleteElement = null;
 
         function editAddress(button) {
+            // Find the closest parent element that contains the address data
             const addressCard = button.closest('.bg-white');
             currentEditElement = addressCard;
             
+            // Get the address ID from the data-id attribute of the addressCard
+            const addressId = addressCard.getAttribute('data-id');
+
+            // Set the address ID into the modal so it can be used later
+            document.getElementById('editModal').setAttribute('data-id', addressId);
+
+            // Populate the input fields in the edit modal with the current address data
             document.getElementById('editNameInput').value = addressCard.querySelector('.addressName').textContent;
             document.getElementById('editPhoneInput').value = addressCard.querySelector('.addressPhone').textContent;
             document.getElementById('editAddressInput').value = addressCard.querySelector('.addressText').textContent;
             document.getElementById('editNoteInput').value = addressCard.querySelector('.addressNote').textContent;
             
+            // Show the edit modal
             document.getElementById('editModal').classList.remove('hidden');
         }
 
+        // Function to confirm editing an address
         function confirmEditAddress() {
-            document.getElementById('editModal').classList.add('hidden');
+            const name = document.getElementById('editNameInput').value;
+            const phone = document.getElementById('editPhoneInput').value;
+            const address = document.getElementById('editAddressInput').value;
+            const note = document.getElementById('editNoteInput').value;
+
+            // Set values in the summary UI
+            document.getElementById('summaryName').textContent = name;
+            document.getElementById('summaryPhone').textContent = phone;
+            document.getElementById('summaryAddress').textContent = address;
+            document.getElementById('summaryNote').textContent = note || '-';
+
+            // Show summary modal
+            document.getElementById('editSummary').classList.remove('hidden');
+
+            // Show confirmation modal
             document.getElementById('confirmModal').classList.remove('hidden');
         }
 
-        function saveAddress() {
-            if (currentEditElement) {
-                const newName = document.getElementById('editNameInput').value;
-                const newPhone = document.getElementById('editPhoneInput').value;
-                const newAddress = document.getElementById('editAddressInput').value;
-                const newNote = document.getElementById('editNoteInput').value;
+        // Function to close the confirmation modal
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
 
-                if (newName && newPhone && newAddress) {
-                    currentEditElement.querySelector('.addressName').textContent = newName;
-                    currentEditElement.querySelector('.addressPhone').textContent = newPhone;
-                    currentEditElement.querySelector('.addressText').textContent = newAddress;
-                    currentEditElement.querySelector('.addressNote').textContent = newNote;
-                    
-                    closeConfirmModal();
-                    showNotification('Alamat berhasil diubah!');
+        // Function to save the address after editing
+        async function saveAddress() {
+            if (!currentEditElement) return;
+
+            // Get the updated values from the summary
+            const updatedName = document.getElementById('summaryName').textContent;
+            const updatedPhone = document.getElementById('summaryPhone').textContent;
+            const updatedAddress = document.getElementById('summaryAddress').textContent;
+            const updatedNote = document.getElementById('summaryNote').textContent;
+            
+            // Get the address ID
+            const addressId = currentEditElement.getAttribute('data-id');
+
+            // Ensure all necessary fields are filled
+            if (updatedName && updatedPhone && updatedAddress && addressId) {
+                const formData = new FormData();
+                formData.append("action", "update");
+                formData.append("address_id", addressId);
+                formData.append("nama_penerima", updatedName);
+                formData.append("nomor_telepon", updatedPhone);
+                formData.append("alamat_lengkap", updatedAddress);
+                formData.append("keterangan", updatedNote);
+
+                try {
+                    const response = await fetch('../database/address.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    console.log(data);
+
+                    // If the update is successful, update the UI
+                    if (data.success) {
+                        // Update UI with the new address details
+                        currentEditElement.querySelector('.addressName').textContent = updatedName;
+                        currentEditElement.querySelector('.addressPhone').textContent = updatedPhone;
+                        currentEditElement.querySelector('.addressText').textContent = updatedAddress;
+                        currentEditElement.querySelector('.addressNote').textContent = updatedNote;
+
+                        // Update the title based on note
+                        const title = updatedNote === 'Rumah' ? 'Alamat Rumah' : 'Alamat Kantor';
+                        currentEditElement.querySelector('h2').textContent = title;
+
+                        // Hide all modals
+                        document.getElementById('editModal').classList.add('hidden');
+                        document.getElementById('editSummary').classList.add('hidden');
+                        document.getElementById('confirmModal').classList.add('hidden');
+
+                        // Show success notification
+                        showNotification('Alamat berhasil diperbarui!');
+                    } else {
+                        alert("Gagal memperbarui alamat: " + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert("Terjadi kesalahan saat memperbarui alamat.");
                 }
+            } else {
+                alert("Semua kolom harus diisi!");
             }
         }
 
@@ -348,7 +454,6 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
                 formData.append("alamat_lengkap", newAddress);
                 formData.append("keterangan", newNote);
 
-                try {
                     // Send the data to the server using fetch
                     const response = await fetch('../database/address.php', {
                         method: 'POST',
@@ -398,16 +503,12 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         `;
                         addressList.insertAdjacentHTML('beforeend', newAddressCard);
-                        closeAddModal();  // Assuming you have a function to close the modal
                         showNotification('Alamat berhasil ditambahkan!');  // Assuming you have a function to show notifications
+                        closeAddModal();  // Assuming you have a function to close the modal
                     } else {
                         console.error("Failed to add address:", data.message);
                         alert("Gagal menambahkan alamat: " + data.message);
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert("Terjadi kesalahan saat menambahkan alamat.");
-                }
             } else {
                 alert("Harap isi semua kolom yang diperlukan!");
             }
@@ -420,11 +521,36 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
 
         function deleteAddress() {
             if (currentDeleteElement) {
-                currentDeleteElement.remove();
-                closeDeleteConfirmModal();
-                showNotification('Alamat berhasil dihapus!');
+                const addressId = currentDeleteElement.getAttribute('data-id');
+
+                // Send the delete request to the backend to remove the address from the database
+                const formData = new FormData();
+                formData.append("action", "delete");
+                formData.append("address_id", addressId);
+
+                // Perform the AJAX request
+                fetch('../database/address.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the address from the DOM
+                        currentDeleteElement.remove();
+                        closeDeleteConfirmModal();
+                        showNotification('Alamat berhasil dihapus!');
+                    } else {
+                        showNotification('Gagal menghapus alamat: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Terjadi kesalahan saat menghapus alamat.');
+                });
             }
         }
+
 
         function closeDeleteConfirmModal() {
             document.getElementById('deleteConfirmModal').classList.add('hidden');
