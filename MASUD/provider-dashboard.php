@@ -72,8 +72,8 @@ try {
                         <i class="fas fa-chevron-down ml-2"></i>
                     </button>
                     <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="#" onclick="loadServiceForm()" class="block px-4 py-2 hover:bg-gray-100 rounded">Tambah Layanan</a>
-                        <a href="User_Riwayat Transaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
+                        <a href="provider_add-service.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Service</a>
+                        <a href="provider_transaction-history.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>
             </aside>
@@ -83,8 +83,8 @@ try {
                 <div class="bg-white p-8 rounded-xl shadow-md">
                     <!-- Tabs -->
                     <div class="flex gap-6 border-b pb-4 mb-6">
-                        <a href="User_dashboard.php" class="text-blue-600 font-semibold">Profil Penyedia Jasa</a>
-                        <a href="User_daftar.php" class="text-gray-500 hover:text-blue-600">User Review </a>
+                        <a href="provider-dashboard.php" class="text-blue-600 font-semibold">Profil Penyedia Jasa</a>
+                        <a href="provider_user-reviews.php" class="text-gray-500 hover:text-blue-600">User Review </a>
                     </div>
 
                     <!-- Profile Header -->

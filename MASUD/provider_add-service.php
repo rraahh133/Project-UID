@@ -90,50 +90,60 @@ session_start();
                         </div>
                     </form>
 
-                    <!-- Daftar Layanan -->
-                    <div class="mt-12">
-                        <h3 class="text-xl font-bold mb-6">Daftar Layanan Anda</h3>
-                        
-                        <?php
-                        // Contoh data layanan (ganti dengan data dari database)
-                        $services = [
-                            [
-                                'name' => 'Jasa Kebersihan Rumah',
-                                'description' => 'Membersihkan rumah secara menyeluruh',
-                                'price' => 150000
-                            ],
-                            [
-                                'name' => 'Jasa Tukang Kebun',
-                                'description' => 'Merawat dan membersihkan taman',
-                                'price' => 200000
-                            ],
-                            [
-                                'name' => 'Jasa Cuci Pakaian',
-                                'description' => 'Mencuci dan menyetrika pakaian',
-                                'price' => 100000
-                            ]
-                        ];
-                        ?>
 
-                        <div class="space-y-4">
-                            <?php foreach ($services as $index => $service): ?>
-                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-lg"><?= htmlspecialchars($service['name']) ?></h4>
-                                        <p class="text-gray-600 mt-1"><?= htmlspecialchars($service['description']) ?></p>
-                                        <p class="text-gray-800 font-medium mt-2">Rp <?= number_format($service['price'], 0, ',', '.') ?></p>
+                    <!-- Daftar -->
+                    <?php
+                    $services = [
+                        [
+                            'name' => 'Jasa Kebersihan Rumah',
+                            'description' => 'Membersihkan rumah secara menyeluruh',
+                            'price' => 150000,
+                            'status' => 'pending'
+                        ],
+                        [
+                            'name' => 'Jasa Tukang Kebun',
+                            'description' => 'Merawat dan membersihkan taman',
+                            'price' => 200000,
+                            'status' => 'approved'
+                        ],
+                        [
+                            'name' => 'Jasa Cuci Pakaian',
+                            'description' => 'Mencuci dan menyetrika pakaian',
+                            'price' => 100000,
+                            'status' => 'approved'
+                        ]
+                    ];
+                    ?>
+
+                    <div class="space-y-4">
+                        <?php foreach ($services as $index => $service): ?>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-lg"><?= htmlspecialchars($service['name']) ?></h4>
+                                    <p class="text-gray-600 mt-1"><?= htmlspecialchars($service['description']) ?></p>
+                                    <p class="text-gray-800 font-medium mt-2">Rp <?= number_format($service['price'], 0, ',', '.') ?></p>
+                                </div>
+                                <div class="ml-4 flex flex-col items-end space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <!-- Status Badge -->
+                                        <span class="px-4 py-1 rounded-full text-sm font-medium
+                                            <?= $service['status'] === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
+                                            Status: <?= ucfirst($service['status']) ?>
+                                        </span>
+                                        
+                                        <!-- Hapus Button -->
+                                        <form method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus layanan ini?');">
+                                            <input type="hidden" name="delete_service" value="<?= $index ?>">
+                                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
+                                                <i class="fas fa-trash-alt"></i> Hapus
+                                            </button>
+                                        </form>
                                     </div>
-                                    <form method="POST" class="ml-4" onsubmit="return confirm('Apakah Anda yakin ingin menghapus layanan ini?');">
-                                        <input type="hidden" name="delete_service" value="<?= $index ?>">
-                                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
-                                            <i class="fas fa-trash-alt"></i> Hapus
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
-                            <?php endforeach; ?>
                         </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </main>
