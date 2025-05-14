@@ -50,10 +50,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // LOGIN SECTION
         $email = $_POST['email'];
         $password = $_POST['password'];
+        $usertype = $_POST['usertype']; // Added usertype
 
         // Prepare statement to fetch user by email
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email AND usertype = :usertype");
         $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':usertype', $usertype); // Bind usertype parameter
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -68,23 +70,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['usertype'] = $user['usertype'];
                 
                 // Send success response and redirect
+                if ($user['usertype'] == 'customer') {
+                    $redirectUrl = './ZIDAN/User_dashboard.php';
+                } else if ($user['usertype'] == 'seller') {
+                    $redirectUrl = './MASUD/provider-dashboard.php';
+                }
+    
                 echo json_encode([
                     "status" => "success",
                     "message" => "Login successful!",
-                    "redirect" => "./ZIDAN/User_dashboard.php"
+                    "redirect" => $redirectUrl
                 ]);
+                
             } else {
-                // Password mismatch
                 echo json_encode(["status" => "error", "message" => "Incorrect password."]);
             }   
         } else {
-            // No user found with the given email
             echo json_encode(["status" => "error", "message" => "No user found with that email."]);
         }
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid request."]);
     }
 } else {
-    // Handle non-POST requests or other conditions here if needed
 }
 ?>

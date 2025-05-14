@@ -1,5 +1,35 @@
 <?php
-session_start();
+include ('../database/db_connect.php'); // Include your PDO connection
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login_user.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+try {
+    $stmt = $pdo->prepare("
+    SELECT users.*, seller_information.*
+    FROM users
+    LEFT JOIN seller_information ON users.user_id = seller_information.user_id
+    WHERE users.user_id = :id
+    ");
+    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);  
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        header("Location: ../login_user.php");
+        exit;
+    }
+} catch (PDOException $e) {
+    echo "Query failed: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <html lang="en">
@@ -33,7 +63,8 @@ session_start();
                     <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
                     <div>
                         <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm">Member Silver</p>
+                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($user['usertype'] ?? 'User') ?></p>
+
                     </div>
                 </div>
 

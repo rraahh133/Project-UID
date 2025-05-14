@@ -47,13 +47,16 @@ include('database/login_register.php');
                   <div class="pass-link">
                      <a href="forgotpassword.php">Forgot password?</a>
                   </div>
+                  <div class="field">
+                     <select name="usertype" required>
+                        <option value="customer">Customer</option>
+                        <option value="seller">Seller</option>
+                     </select>
+                  </div>
                   <div class="field btn">
                      <div class="btn-layer"></div>
                      <input type="submit" name="login" value="Login">
                   </div>
-                  <a href="index.php" style="text-decoration: none; color: black;" class="underline-animation hover:underline">
-                     Return To Home
-                  </a>
                   <div class="signup-link">
                      Not a member? <a href="login_user.php">Signup now</a>
                   </div>

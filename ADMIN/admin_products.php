@@ -1,5 +1,41 @@
 <?php
-session_start();
+// Include DB connection
+require '../database/db_connect.php'; // Adjust the path as needed
+
+try {
+    // Join seller_service with seller_information to get provider name
+    $stmt = $pdo->prepare("
+        SELECT s.service_id, s.service_name, s.service_description, s.service_price, s.status, i.name AS provider_name
+        FROM seller_service s
+        JOIN seller_information i ON s.user_id = i.user_id
+        ORDER BY s.service_id DESC
+    ");
+    $stmt->execute();
+    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+    $countStmt = $pdo->prepare("
+        SELECT status, COUNT(*) as count 
+        FROM seller_service 
+        GROUP BY status
+    ");
+    $countStmt->execute();
+    $statusCountsRaw = $countStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $statusCounts = [
+        'approved' => 0,
+        'pending' => 0,
+        'rejected' => 0
+    ];
+    foreach ($statusCountsRaw as $row) {
+        $status = $row['status'];
+        $statusCounts[$status] = (int)$row['count'];
+    }
+
+} catch (PDOException $e) {
+    echo "Error fetching services: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -94,151 +130,102 @@ session_start();
                         <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending"
                             type="button" role="tab">
                             Pengajuan Baru
-                            <span class="badge bg-warning ms-2">3</span>
+                            <span class="badge bg-warning ms-2"><?= $statusCounts['pending'] ?></span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active"
                             type="button" role="tab">
                             Jasa Aktif
-                            <span class="badge bg-success ms-2">3</span>
+                            <span class="badge bg-success ms-2"><?= $statusCounts['approved'] ?></span>
                         </button>
                     </li>
                 </ul>
+
 
                 <!-- Tab Content -->
                 <div class="tab-content" id="serviceTabsContent">
                     <!-- Pending Services -->
                     <div class="tab-pane fade show active" id="pending" role="tabpanel">
                         <div class="row">
-                            <?php
-                            $services = [
-                                [
-                                    'id' => 1,
-                                    'title' => 'Jasa Desain Logo',
-                                    'description' => 'Desain logo profesional untuk bisnis Anda dengan 3 revisi gratis.',
-                                    'provider' => 'John Designer',
-                                    'price' => 'Rp 500.000',
-                                ],
-                                [
-                                    'id' => 2,
-                                    'title' => 'Jasa Pembuatan Website',
-                                    'description' => 'Pembuatan website responsif dengan fitur modern dan SEO friendly.',
-                                    'provider' => 'Sarah Developer',
-                                    'price' => 'Rp 2.500.000',
-                                ],
-                                [
-                                    'id' => 3,
-                                    'title' => 'Jasa Video Editing',
-                                    'description' => 'Editing video profesional untuk konten YouTube atau iklan.',
-                                    'provider' => 'Mike Editor',
-                                    'price' => 'Rp 750.000',
-                                ],
-                                // Tambahkan lebih banyak data di sini
-                            ];
-                            ?>
-
-                            <div class="row">
-                                <?php foreach ($services as $service): ?>
-                                <div class="col-md-4 mb-4">
-                                    <div
-                                        class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
-                                        <div class="card-body p-6 flex flex-col justify-between h-full">
-                                            <div>
-                                                <div class="flex justify-between items-start mb-4">
-                                                    <h5 class="text-xl font-semibold text-gray-800">
-                                                        <?= htmlspecialchars($service['title']) ?></h5>
-                                                    <span
-                                                        class="badge bg-yellow-500 text-white px-3 py-1 rounded-full text-sm">Menunggu
-                                                        Persetujuan</span>
+                            <?php foreach ($services as $service): ?>
+                                <?php if ($service['status'] === 'pending'): ?>
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
+                                            <div class="card-body p-6 flex flex-col justify-between h-full">
+                                                <div>
+                                                    <div class="flex justify-between items-start mb-4">
+                                                        <h5 class="text-xl font-semibold text-gray-800">
+                                                            <?= htmlspecialchars($service['service_name']) ?>
+                                                        </h5>
+                                                        <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
+                                                            Status: <?= ucfirst($service['status']) ?>
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-gray-600 mb-4">
+                                                        <?= htmlspecialchars($service['service_description']) ?>
+                                                    </p>
+                                                    <p class="text-gray-700">
+                                                        <strong>Penyedia:</strong> <?= htmlspecialchars($service['provider_name']) ?><br>
+                                                        <strong>Harga:</strong> Rp <?= number_format($service['service_price'], 0, ',', '.') ?>
+                                                    </p>
                                                 </div>
-                                                <p class="text-gray-600 mb-4">
-                                                    <?= htmlspecialchars($service['description']) ?></p>
-                                                <p class="text-gray-700">
-                                                    <strong>Penyedia:</strong>
-                                                    <?= htmlspecialchars($service['provider']) ?><br>
-                                                    <strong>Harga:</strong> <?= htmlspecialchars($service['price']) ?>
-                                                </p>
-                                            </div>
-                                            <div class="flex justify-between items-center mt-6">
-                                                <div class="flex space-x-2">
-                                                    <a href="?approve=<?= $service['id'] ?>"
-                                                        class="bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
-                                                        <i class="fas fa-check"></i> Setujui
-                                                    </a>
-                                                    <a href="?reject=<?= $service['id'] ?>"
-                                                        class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
-                                                        <i class="fas fa-times"></i> Tolak
-                                                    </a>
+                                                <div class="flex justify-between items-center mt-6">
+                                                    <div class="flex space-x-2">
+                                                        <button onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'approved')"
+                                                            class="bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
+                                                            <i class="fas fa-check"></i> Setujui
+                                                        </button>
+                                                        <button onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'rejected')"
+                                                            class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
+                                                            <i class="fas fa-times"></i> Tolak
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
                         </div>
                     </div>
 
-                    <?php
-                    // Sample array of active services
-                    $activeServices = [
-                        [
-                            'id' => 1,
-                            'title' => 'Jasa Fotografi',
-                            'description' => 'Fotografi profesional untuk acara pernikahan dan bisnis',
-                            'provider' => 'Lisa Photographer',
-                            'price' => 'Rp 1.500.000',
-                        ],
-                        [
-                            'id' => 2,
-                            'title' => 'Jasa Copywriting',
-                            'description' => 'Penulisan konten profesional untuk website dan media sosial',
-                            'provider' => 'David Writer',
-                            'price' => 'Rp 300.000',
-                        ],
-                        [
-                            'id' => 3,
-                            'title' => 'Jasa Social Media Management',
-                            'description' => 'Manajemen dan optimasi akun media sosial bisnis Anda',
-                            'provider' => 'Emma Manager',
-                            'price' => 'Rp 2.000.000',
-                        ],
-                    ];
-                    ?>
-
-
-
 
                     <!-- Active Services -->
-                    <div class="tab-pane fade p-4 bg-gray-100 min-h-screen" id="active" role="tabpanel">
-                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Active Services</h2>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <?php foreach ($activeServices as $service): ?>
-                            <div
-                                class="bg-white rounded-xl shadow-md hover:shadow-lg transition transform hover:scale-[1.02] h-full flex flex-col">
-                                <div class="p-6 flex flex-col justify-between h-full">
-                                    <div class="flex justify-between items-start mb-4">
-                                        <h5 class="text-xl font-bold text-gray-900">
-                                            <?= htmlspecialchars($service['title']) ?></h5>
-                                        <span
-                                            class="bg-green-500 text-white text-xs px-3 py-1 rounded-full">Aktif</span>
-                                    </div>
-                                    <p class="text-gray-700 text-sm mb-4">
-                                        <?= htmlspecialchars($service['description']) ?></p>
-                                    <p class="text-sm text-gray-600 mb-4">
-                                        <strong>Penyedia:</strong> <?= htmlspecialchars($service['provider']) ?><br>
-                                        <strong>Harga:</strong> <?= htmlspecialchars($service['price']) ?>
-                                    </p>
-                                    <div class="mt-auto flex justify-end">
-                                        <button onclick="deleteService(<?= $service['id'] ?>)"
-                                            class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded transition duration-300">
-                                            <i class="fas fa-trash mr-1"></i> Hapus
-                                        </button>
+                    <div class="tab-pane fade" id="active" role="tabpanel">
+                        <div class="row">
+                            <?php foreach ($services as $service): ?>
+                                <?php if ($service['status'] === 'approved'): ?>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
+                                        <div class="card-body p-6 flex flex-col justify-between h-full">
+                                            <div>
+                                                <div class="flex justify-between items-start mb-4">
+                                                    <h5 class="text-xl font-semibold text-gray-800">
+                                                        <?= htmlspecialchars($service['service_name']) ?>
+                                                    </h5>
+                                                    <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                                        Aktif
+                                                    </span>
+                                                </div>
+                                                <p class="text-gray-600 mb-4">
+                                                    <?= htmlspecialchars($service['service_description']) ?>
+                                                </p>
+                                                <p class="text-gray-700">
+                                                    <strong>Penyedia:</strong> <?= htmlspecialchars($service['provider_name']) ?><br>
+                                                    <strong>Harga:</strong> Rp <?= number_format($service['service_price'], 0, ',', '.') ?>
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-end mt-6">
+                                                <button onclick="deleteService(<?= $service['service_id'] ?>)"
+                                                    class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded transition duration-300">
+                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -251,11 +238,54 @@ session_start();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script>
-        function deleteService(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus jasa ini?')) {
-                window.location.href = '?delete=' + id;
-            }
+        function deleteService(serviceId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus jasa ini?')) return;
+
+            fetch('../database/admin-service.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'deleteService',
+                    service_id: serviceId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(err => {
+                alert('Something went wrong!');
+                console.error(err);
+            });
         }
+
+        function updateServiceStatus(serviceId, status) {
+            fetch('../database/admin-service.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'updateServiceStatus',
+                    service_id: serviceId,
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) {
+                    // Reload or update the UI
+                    location.reload();
+                }
+            });
+        }
+
     </script>
 </body>
 

@@ -1,19 +1,21 @@
 <?php
 include ('../database/db_connect.php'); // Include your PDO connection
-session_start();
-if (!isset($_SESSION['usertype']) || $_SESSION['usertype'] !== 'seller') {
-    http_response_code(403);
-    exit("Access denied.");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login_user.php");
+    exit;
+}
 
 $user_id = $_SESSION['user_id'];
 
 try {
     $stmt = $pdo->prepare("
-    SELECT users.*, user_information.*
+    SELECT users.*, seller_information.*
     FROM users
-    INNER JOIN user_information ON users.user_id = user_information.user_id
+    LEFT JOIN seller_information ON users.user_id = seller_information.user_id
     WHERE users.user_id = :id
     ");
     $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
@@ -21,7 +23,7 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        header("Location: ./login_user.php");
+        header("Location: ../login_user.php");
         exit;
     }
 } catch (PDOException $e) {
@@ -61,7 +63,7 @@ try {
                     <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
                     <div>
                         <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm">Member Silver</p>
+                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($user['usertype'] ?? 'User') ?></p>
                     </div>
                 </div>
 
@@ -118,7 +120,7 @@ try {
 
                     <!-- Edit Button -->
                     <div class="text-center mt-8">
-                        <a href="update_form.php" class="inline-block bg-gray-800 text-white px-6 py-3 rounded-full shadow hover:bg-gray-700 transition">
+                        <a href="provider-form.php" class="inline-block bg-gray-800 text-white px-6 py-3 rounded-full shadow hover:bg-gray-700 transition">
                             Edit Profil
                         </a>
                     </div>

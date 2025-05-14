@@ -57,7 +57,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
             <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-semibold text-gray-800">Edit Biodata</h2>
-                    <a href="User_dashboard.php" class="inline-flex items-center text-gray-600 hover:text-gray-800 text-lg font-semibold py-2 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all">
+                    <a href="provider-dashboard.php" class="inline-flex items-center text-gray-600 hover:text-gray-800 text-lg font-semibold py-2 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all">
                         <i class="fas fa-arrow-left mr-2"></i> Back
                     </a>
                 </div>
@@ -283,7 +283,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
             return;
         }
         const formData = new FormData(form);
-        fetch('../database/user-save_biodata.php', {
+        fetch('../database/seller-save_biodata.php', {
             method: 'POST',
             body: formData
         }).then(response => response.json())
@@ -298,6 +298,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
             }
         }).catch(error => {
             console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan data.');
         });
         closeConfirmationModal();
     }
