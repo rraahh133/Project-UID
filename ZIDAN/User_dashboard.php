@@ -13,10 +13,24 @@ $user_id = $_SESSION['user_id'];
 
 try {
     $stmt = $pdo->prepare("
-    SELECT users.*, user_information.*
-    FROM users
-    LEFT JOIN user_information ON users.user_id = user_information.user_id
-    WHERE users.user_id = :id
+        SELECT 
+            users.user_id,
+            users.username,
+            users.email AS user_email,           -- alias to avoid conflict
+            users.usertype,
+            users.name,
+            users.birthdate,
+            users.gender,
+            users.phone,
+            user_information.email AS info_email,  -- alias here
+            user_information.name AS info_name,
+            user_information.birthdate AS info_birthdate,
+            user_information.gender AS info_gender,
+            user_information.phone AS info_phone,
+            user_information.profile_picture
+        FROM users
+        LEFT JOIN user_information ON users.user_id = user_information.user_id
+        WHERE users.user_id = :id
     ");
     $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -98,7 +112,7 @@ try {
                         <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="w-36 h-36 rounded-full border shadow">
                         <div>
                             <h2 class="text-2xl font-bold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                            <p class="text-gray-600"><?= htmlspecialchars($user['email'] ?? '-') ?></p>
+                            <p class="text-gray-600"><?= htmlspecialchars($user['user_email'] ?? '-') ?></p>
                         </div>
                     </div>
 

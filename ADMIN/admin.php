@@ -6,11 +6,11 @@ $user_id = $_SESSION["user_id"];
 
 try {
     $stmt = $pdo->prepare("
-SELECT users.*, user_information.*
-FROM users
-INNER JOIN user_information ON users.user_id = user_information.user_id
-WHERE users.user_id = :id
-");
+        SELECT users.*, user_information.*
+        FROM users
+        INNER JOIN user_information ON users.user_id = user_information.user_id
+        WHERE users.user_id = :id
+    ");
     $stmt->bindParam(":id", $user_id, PDO::PARAM_INT);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -18,6 +18,11 @@ WHERE users.user_id = :id
     $stmt_total = $pdo->prepare("SELECT COUNT(*) AS total_users FROM users");
     $stmt_total->execute();
     $total_users = $stmt_total->fetch(PDO::FETCH_ASSOC)["total_users"];
+
+    $stmt_services = $pdo->prepare("SELECT COUNT(*) AS total_services FROM seller_service");
+    $stmt_services->execute();
+    $total_services = $stmt_services->fetch(PDO::FETCH_ASSOC)["total_services"];
+
 
     if (!$user) {
         header("Location: ./login_user.php");
@@ -125,7 +130,7 @@ WHERE users.user_id = :id
                         <div class="stat-card bg-primary text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h3>250</h3>
+                                    <h3><?= htmlspecialchars($total_users) ?></h3>
                                     <p class="mb-0">Total Pengguna</p>
                                 </div>
                             </div>
@@ -135,7 +140,7 @@ WHERE users.user_id = :id
                         <div class="stat-card bg-success text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h3>45</h3>
+                                    <h3><?= htmlspecialchars($total_services) ?></h3>
                                     <p class="mb-0">Total Jasa</p>
                                 </div>
                             </div>

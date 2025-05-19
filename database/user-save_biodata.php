@@ -40,6 +40,7 @@ $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($user_info) {
     // User exists in user_information, perform update
+    $query = "UPDATE users SET email = :email";
     $query = "UPDATE user_information SET name = :name, birthdate = :birthdate, gender = :gender, email = :email, phone = :phone";
     if ($profile_picture) {
         $query .= ", profile_picture = :profile_picture";

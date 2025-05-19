@@ -1,6 +1,24 @@
 <?php
-session_start();
+include "../database/db_connect.php"; // your PDO connection
+
+try {
+    $stmt = $pdo->query("
+        SELECT 
+            u.user_id,
+            u.username,
+            u.email,
+            u.usertype,
+            COALESCE(ui.name, 'Not Found') AS info_name
+        FROM users u
+        LEFT JOIN user_information ui ON u.user_id = ui.user_id
+    ");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Query failed: " . $e->getMessage();
+    exit();
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -76,69 +94,55 @@ session_start();
                 </ul>
             </div>
 
-            <?php
-            // Sample users data (you can replace this with your database data)
-            $users = [
-                ['id' => 1, 'username' => 'john_doe', 'email' => 'john.doe@example.com', 'role' => 'admin'],
-                ['id' => 2, 'username' => 'sarah_smith', 'email' => 'sarah.smith@example.com', 'role' => 'seller'],
-                ['id' => 3, 'username' => 'mike_johnson', 'email' => 'mike.johnson@example.com', 'role' => 'user'],
-                ['id' => 4, 'username' => 'emma_wilson', 'email' => 'emma.wilson@example.com', 'role' => 'seller'],
-                ['id' => 5, 'username' => 'david_brown', 'email' => 'david.brown@example.com', 'role' => 'user'],
-            ];
-            ?>
+            
+<!-- Your HTML content starts here -->
+<div class="w-full lg:w-10/12 p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h2>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            data-modal-target="addUserModal">
+            <i class="fas fa-plus mr-2"></i>Tambah Pengguna
+        </button>
+    </div>
 
-            <!-- Main Content -->
-            <div class="w-full lg:w-10/12 p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h2>
-                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                        data-modal-target="addUserModal">
-                        <i class="fas fa-plus mr-2"></i>Tambah Pengguna
-                    </button>
-                </div>
+    <!-- User Table -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto text-sm text-left text-gray-700">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                        <th class="px-6 py-4">ID USER</th>
+                        <th class="px-6 py-4">Username</th>
+                        <th class="px-6 py-4">Email</th>
+                        <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <?php foreach ($users as $user): ?>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4"><?= htmlspecialchars($user['user_id']) ?></td>
+                        <td class="px-6 py-4"><?= htmlspecialchars($user['info_name']) ?></td>
+                        <td class="px-6 py-4"><?= htmlspecialchars($user['email']) ?></td>
+                        <td class="px-6 py-4"><?= htmlspecialchars($user['usertype']) ?></td>
+                        <td class="px-6 py-4">
+                            <form method="POST" class="d-inline"
+                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
+                                <button type="submit" name="delete_user"
+                                    class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-                <!-- User Table -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full table-auto text-sm text-left text-gray-700">
-                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
-                                <tr>
-                                    <th class="px-6 py-4">ID</th>
-                                    <th class="px-6 py-4">Username</th>
-                                    <th class="px-6 py-4">Email</th>
-                                    <th class="px-6 py-4">Role</th>
-                                    <th class="px-6 py-4">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                <?php foreach ($users as $user): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4"><?php echo $user['id']; ?></td>
-                                    <td class="px-6 py-4"><?php echo $user['username']; ?></td>
-                                    <td class="px-6 py-4"><?php echo $user['email']; ?></td>
-                                    <td class="px-6 py-4"><?php echo $user['role']; ?></td>
-                                    <td class="px-6 py-4">
-                                        <button
-                                            class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition"
-                                            onclick="editUser(<?php echo $user['id']; ?>)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form method="POST" class="d-inline"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <button type="submit" name="delete_user"
-                                                class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
