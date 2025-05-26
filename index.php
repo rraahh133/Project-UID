@@ -35,7 +35,7 @@ if (isset($_SESSION['user_id'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Document</title>
-<link rel="stylesheet" href="./CSS_RAFI/index.css">
+<link rel="stylesheet" href="./assets/css/index.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <script src="https://unpkg.com/flowbite@1.4.1/dist/flowbite.js"></script>
 </head>
@@ -69,18 +69,14 @@ if (isset($_SESSION['user_id'])) {
                         </button>
                         <div id="user-dropdown" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-50">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                                <a href="./ZIDAN/User_dashboard.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
+                                <a href="./User/user_dashboard.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
                                 <a href="logout.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
                             </div>
                         </div>
                     </div>
                 <?php else: ?>
                     <div class="dropdown">
-                        <a href="#">Masuk <span class="arrow">&#8250;</span></a>
-                        <div class="dropdown-content">
-                            <a href="login_user.php">Masuk as User</a>
-                            <a href="login_seller.php">Masuk as Seller</a>
-                        </div>
+                        <a href="auth.php">Masuk <span class="arrow">&#8250;</span></a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -95,11 +91,7 @@ if (isset($_SESSION['user_id'])) {
             <a href="#testimonial-section">Testimonial</a>
             <a href="#explore-section">Katalog</a>
             <div class="mobile-dropdown">
-                <a href="#">Masuk <span class="arrow">&#8250;</span></a>
-                <div class="mobile-dropdown-content">
-                    <a href="login_user.php">Masuk as User</a>
-                    <a href="login_seller.php">Masuk as Seller</a>
-                </div>
+                <a href="auth.php">Masuk <span class="arrow">&#8250;</span></a>
             </div>
         </div>
     </header>
@@ -286,7 +278,7 @@ if (isset($_SESSION['user_id'])) {
 
 </section>
 
-<script src="./JS_RAFI/script.js"></script>
+<script src="./assets/js/script.js"></script>
 
 </body>
 </html>

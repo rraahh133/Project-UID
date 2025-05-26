@@ -71,9 +71,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 // Send success response and redirect
                 if ($user['usertype'] == 'customer') {
-                    $redirectUrl = './ZIDAN/User_dashboard.php';
+                    $redirectUrl = './User/user_dashboard.php';
                 } else if ($user['usertype'] == 'seller') {
-                    $redirectUrl = './MASUD/provider-dashboard.php';
+                    $redirectUrl = './Seller/provider-dashboard.php';
                 }
     
                 echo json_encode([

@@ -34,7 +34,7 @@ $services = getFilteredServices($kategori);
                 <div class="flex items-center space-x-4">
                     <a href="index.php" class="text-gray-600 hover:text-blue-600">Home</a>
                     <a href="catalog.php" class="text-blue-600">Katalog</a>
-                    <a href="login_user.php" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Masuk</a>
+                    <a href="auth.php" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Masuk</a>
                 </div>
             </div>
         </div>

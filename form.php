@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Form Kustom - SiBantu</title>
-<link rel="stylesheet" href="./CSS_RAFI/index.css">
+<link rel="stylesheet" href="./assets/css/index.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <script src="https://unpkg.com/flowbite@1.4.1/dist/flowbite.js"></script>
 </head>
