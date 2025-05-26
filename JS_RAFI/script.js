@@ -1,26 +1,26 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const buttons = document.getElementsByClassName('order-button');
-    
+
     Array.from(buttons).forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             alert('Pesanan Anda telah diterima!');
         });
     });
 
     const accordions = document.querySelectorAll('.accordions__item');
     accordions.forEach(el => {
-        el.addEventListener('click', (e) =>{
+        el.addEventListener('click', (e) => {
             const self = e.currentTarget;
             const control = self.querySelector('.accordions__control');
             const content = self.querySelector('.accordions__content');
-    
+
             self.classList.toggle('open');
-    
-            if(self.classList.contains('open')){
+
+            if (self.classList.contains('open')) {
                 control.setAttribute('aria-expanded', true);
                 content.setAttribute('aria-hidden', false);
                 content.style.maxHeight = content.scrollHeight + 'px';
-            }else{
+            } else {
                 control.setAttribute('aria-expanded', false);
                 content.setAttribute('aria-hidden', true);
                 content.style.maxHeight = null;
@@ -31,23 +31,23 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-    
+
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
-    
+
             if (targetElement) {
                 const sectionHeight = targetElement.offsetHeight;
                 const viewportHeight = window.innerHeight;
                 let targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-    
+
                 if (sectionHeight < viewportHeight) {
                     targetPosition -= (viewportHeight - sectionHeight) / 2;
                 }
-    
-                const duration = 800; 
+
+                const duration = 800;
                 let startPosition = window.pageYOffset;
                 let startTime = null;
-    
+
                 function animationScroll(currentTime) {
                     if (!startTime) startTime = currentTime;
                     const timeElapsed = currentTime - startTime;
@@ -55,19 +55,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.scrollTo(0, run);
                     if (timeElapsed < duration) requestAnimationFrame(animationScroll);
                 }
-    
+
                 function ease(t, b, c, d) {
                     t /= d / 2;
                     if (t < 1) return c / 2 * t * t + b;
                     t--;
                     return -c / 2 * (t * (t - 2) - 1) + b;
                 }
-    
+
                 requestAnimationFrame(animationScroll);
             }
         });
     });
-    
+
 });
 
 const scrollContainer = document.getElementById("scrollContainer");
@@ -108,7 +108,7 @@ scrollContainer.addEventListener('touchmove', (e) => {
 
 scrollContainer.addEventListener('touchend', () => {
     if (touchEndX < touchStartX) {
-        scrollContainer.scrollLeft += cardWidth; 
+        scrollContainer.scrollLeft += cardWidth;
     } else if (touchEndX > touchStartX) {
         scrollContainer.scrollLeft -= cardWidth;
     }
@@ -146,10 +146,13 @@ function toggleMenu() {
     mobileMenu.classList.toggle('open');
 }
 
-
-
-
-
+document.addEventListener('click', function (event) {
+    const container = document.getElementById('user-menu-container');
+    const dropdown = document.getElementById('user-dropdown');
+    if (!container.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
 
 function toggleMenu() {
     const menu = document.getElementById("mobile-menu");

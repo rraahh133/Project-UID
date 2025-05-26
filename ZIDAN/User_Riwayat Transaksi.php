@@ -1,174 +1,153 @@
+<?php
+include ('../database/db_connect.php');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login_user.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+try {
+    $stmt = $pdo->prepare("
+    SELECT users.*, user_information.*
+    FROM users
+    LEFT JOIN user_information ON users.user_id = user_information.user_id
+    WHERE users.user_id = :id
+    ");
+    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        header("Location: ../login_user.php");
+        exit;
+    }
+} catch (PDOException $e) {
+    echo "Query failed: " . $e->getMessage();
+    exit;
+}
+?>
+
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Riwayat Transaksi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
-
-        <!-- Header --> 
-        <header class="bg-gray-700 shadow p-4 flex justify-between items-center">
+        <!-- Header -->
+        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white">
-                <a class="logo" href="./../index.php">
-                    SiBantu
-                </a>
+                <a href="./../index.php">SiBantu</a>
             </h1>
-            <div class="flex items-center space-x-4">
-                <i class="fas fa-bell text-white">
-                </i>
-                <i class="fas fa-envelope text-white">
-                </i>
-                <img alt="User Profile" class="rounded-full" height="40"
-                    src="https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg"
-                    width="40" />
+            <div class="flex items-center gap-4">
+                <i class="fas fa-bell text-white text-lg"></i>
+                <i class="fas fa-envelope text-white text-lg"></i>
+                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
             </div>
         </header>
-        <div class="flex flex-1 flex-col md:flex-row">
 
+        <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
-            <div class="w-full md:w-1/5 bg-gray-200 p-4 shadow">
-                <div class="flex items-center mb-4 bg-white p-4 rounded">
-                    <img alt="User Profile" class="rounded-full mr-2" height="50"
-                        src="https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg"
-                        width="50" />
+            <aside class="w-full md:w-64 bg-white p-6 shadow-md">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
                     <div>
-                        <h2 class="text-xl font-bold text-black">
-                            Zaidan
-                        </h2>
-                        <p class="text-gray-600">
-                            Member Silver
-                        </p>
+                        <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
+                        <p class="text-gray-500 text-sm">Member Silver</p>
                     </div>
                 </div>
-                <!-- Dropdown Categories -->
-                <div class="mb-4">
-                    <div class="relative">
-                        <button class="w-full text-left bg-white text-gray-700 px-4 py-2 rounded"
-                            onclick="toggleDropdown('pembayaranDropdown')">
-                            Transaksi
-                            <i class="fas fa-chevron-down float-right mt-1"></i>
-                        </button>
-                        <div class="hidden mt-2 bg-white shadow rounded" id="pembayaranDropdown">
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="User_status.php">
-                                Status Pembayaran
-                            </a>
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                href="User_Riwayat Transaksi.php">
-                                Riwayat Transaksi
-                            </a>
-                        </div>
+
+                <!-- Dropdown -->
+                <div>
+                    <button onclick="toggleDropdown('transaksiDropdown')" class="w-full bg-gray-100 px-4 py-2 rounded flex justify-between items-center text-gray-700 font-medium hover:bg-gray-200">
+                        Transaksi
+                        <i class="fas fa-chevron-down ml-2"></i>
+                    </button>
+                    <div id="transaksiDropdown" class="hidden mt-2">
+                        <a href="User_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
+                        <a href="User_Riwayat Transaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>
-            </div>
+            </aside>
 
             <!-- Main Content -->
-            <div class="w-full md:w-3/4 p-4">
-                <div class="bg-white p-4 rounded shadow mb-4">
-                    <div class="border-b border-gray-200 mb-4">
-                        <ul class="flex space-x-4">
-                            <li><a class="text-gray-700 font-semibold" href="User_dashboard.php">Biodata Diri</a></li>
-                            <li><a class="text-gray-700" href="User_daftar.php">Daftar Alamat</a></li>
-                        </ul>
+            <main class="flex-1 p-6">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <!-- Tabs -->
+                    <div class="flex gap-6 border-b pb-4 mb-6">
+                        <a href="User_dashboard.php" class="text-gray-500 hover:text-blue-600">Biodata Diri</a>
+                        <a href="User_daftar.php" class="text-gray-500 hover:text-blue-600">Daftar Alamat</a>
                     </div>
+
                     <div class="mt-6">
-                        <h3 class="text-lg font-bold mb-4">
-                            Riwayat Transaksi
-                        </h3>
+                        <h3 class="text-2xl font-bold mb-6">Riwayat Transaksi</h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
-                                <thead>
+                                <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="py-2 px-4 border-b">
-                                            No
-                                        </th>
-                                        <th class="py-2 px-4 border-b">
-                                            ID Transaksi
-                                        </th>
-                                        <th class="py-2 px-4 border-b">
-                                            Jenis Jasa
-                                        </th>
-                                        <th class="py-2 px-4 border-b">
-                                            Tanggal
-                                        </th>
-                                        <th class="py-2 px-4 border-b">
-                                            Harga
-                                        </th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">No</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">ID Transaksi</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Jenis Jasa</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Tanggal</th>
+                                        <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Harga</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="py-2 px-4 border-b">
-                                            1
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            TRX001
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            Jasa Membersihkan Rumah
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            2024-10-01
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            Rp100.000,00
-                                        </td>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 text-sm text-gray-700">1</td>
+                                        <td class="py-3 px-4 text-sm text-gray-700">TRX001</td>
+                                        <td class="py-3 px-4 text-sm text-gray-700">Jasa Membersihkan Rumah</td>
+                                        <td class="py-3 px-4 text-sm text-gray-700">2024-10-01</td>
+                                        <td class="py-3 px-4 text-sm text-gray-700">Rp100.000,00</td>
                                     </tr>
                                 </tbody>
-                                <tfoot>
+                                <tfoot class="bg-gray-50">
                                     <tr>
-                                        <td class="py-2 px-4 border-t text-right font-bold" colspan="4">
-                                            Total Transaksi
-                                        </td>
-                                        <td class="py-2 px-4 border-t font-bold">
-                                            Rp100.000,00
-                                        </td>
+                                        <td class="py-3 px-4 text-right font-semibold text-gray-700" colspan="4">Total Transaksi</td>
+                                        <td class="py-3 px-4 font-semibold text-gray-700">Rp100.000,00</td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
-    </div>
 
-    <!-- Footer Section -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="px-4 mx-auto max-w-screen-xl">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Logo and Description -->
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-10 mt-auto">
+            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div>
-                    <h2 class="text-2xl font-bold">SiBantu</h2>
-                    <p class="mt-4 text-sm">
-                        Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.
-                    </p>
+                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
+                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
                 </div>
-                
-                <!-- Quick Links -->
                 <div>
-                    <h3 class="text-lg font-semibold">Quick Links</h3>
-                    <nav class="mt-4 space-y-2">
-                        <a href="index.php" class="block hover:underline">Home</a>
-                        <a href="faq.php" class="block hover:underline">FAQ</a>
-                    </nav>
+                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li><a href="index.php" class="hover:underline">Home</a></li>
+                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
+                    </ul>
                 </div>
-                
-                <!-- Contact Us -->
                 <div>
-                    <h3 class="text-lg font-semibold">Contact Us</h3>
-                    <nav class="mt-4 space-y-2">
-                        <a href="mailto:support@sibantu.com" class="block hover:underline">support@sibantu.com</a>
-                        <a href="tel:+6281234567890" class="block hover:underline">+62 812 3456 7890</a>
-                    </nav>
+                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
+                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
+                    </ul>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <script>
         function toggleDropdown(id) {

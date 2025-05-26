@@ -1,3 +1,34 @@
+<?php
+include('./database/db_connect.php'); // Your PDO connection
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$user = null; // Default if not logged in
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                users.user_id,
+                users.username,
+                user_information.profile_picture
+            FROM users
+            LEFT JOIN user_information ON users.user_id = user_information.user_id
+            WHERE users.user_id = :id
+        ");
+        $stmt->execute([':id' => $user_id]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Handle error if you want, or ignore silently here
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,17 +48,43 @@
             <a class="logo" href="index.php">SiBantu</a>
             <div class="nav-center">
                 <a href="#testimonial-section">Testimonial</a>
-                <a href="#explore-section">Katalog</a>
+                <a href="#explore-section">Katalog</a>  
             </div>
             <div class="nav-right">
-                <div class="dropdown">
-                    <a href="#">Masuk <span class="arrow">&#8250;</span></a>
-                    <div class="dropdown-content">
-                        <a href="login_user.php">Masuk as User</a>
-                        <a href="login_seller.php">Masuk as Seller</a>
+                <?php if ($user): ?>
+                    <div id="user-menu-container" class="relative inline-block text-left">
+                        <button type="button" 
+                                class="flex items-center gap-2 text-white focus:outline-none" 
+                                id="user-menu-button" 
+                                aria-expanded="false" 
+                                aria-haspopup="true"
+                                onclick="document.getElementById('user-dropdown').classList.toggle('hidden')">
+                            <span><?= htmlspecialchars($user['username']) ?></span>
+                            <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
+                                alt="Profile Picture" 
+                                class="rounded-full w-10 h-10 border-2 border-white" />
+                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="user-dropdown" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-50">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <a href="./ZIDAN/User_dashboard.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
+                                <a href="logout.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php else: ?>
+                    <div class="dropdown">
+                        <a href="#">Masuk <span class="arrow">&#8250;</span></a>
+                        <div class="dropdown-content">
+                            <a href="login_user.php">Masuk as User</a>
+                            <a href="login_seller.php">Masuk as Seller</a>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
+
             <!-- Hamburger icon for mobile -->
             <div class="hamburger" onclick="toggleMenu()">
                 &#9776;
@@ -77,9 +134,9 @@
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Fotografi</h3>
                                 <p class="text-gray-600 text-sm">Prewed, pernikahan, DLL</p>
-                                <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <a href="payment.php?service=Jasa%20Fotografi&price=Rp%20500.000%20-%202.000.000&category=Fotografi" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <!-- Card 2 -->
@@ -88,9 +145,9 @@
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Graphic Design</h3>
                                 <p class="text-gray-600 text-sm">Membuat logo, poster, DLL</p>
-                                <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <a href="payment.php?service=Jasa%20Graphic%20Design&price=Rp%20300.000%20-%201.500.000&category=Desain" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <!-- Card 3 -->
@@ -99,9 +156,9 @@
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Pembuatan Website</h3>
                                 <p class="text-gray-600 text-sm">untuk bisnis atau portofolio pribadi</p>
-                                <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <a href="payment.php?service=Jasa%20Pembuatan%20Website&price=Rp%202.000.000%20-%2010.000.000&category=Teknologi" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <!-- Card 4 -->
@@ -110,9 +167,9 @@
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Kebersihan</h3>
                                 <p class="text-gray-600 text-sm">membersihkan rumah, kantor, DLL</p>
-                                <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <a href="payment.php?service=Jasa%20Kebersihan&price=Rp%20200.000%20-%20500.000&category=Kebersihan" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <!-- Card 5 -->
@@ -129,6 +186,15 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- Tombol See All -->
+                <div class="flex justify-center mt-6">
+                    <a href="catalog.php" class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
+                        Lihat Semua Layanan
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>

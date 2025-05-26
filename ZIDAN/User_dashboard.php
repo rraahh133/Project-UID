@@ -16,13 +16,13 @@ try {
         SELECT 
             users.user_id,
             users.username,
-            users.email AS user_email,           -- alias to avoid conflict
+            users.email AS user_email,
             users.usertype,
             users.name,
             users.birthdate,
             users.gender,
             users.phone,
-            user_information.email AS info_email,  -- alias here
+            user_information.email AS info_email,
             user_information.name AS info_name,
             user_information.birthdate AS info_birthdate,
             user_information.gender AS info_gender,

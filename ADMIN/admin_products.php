@@ -5,14 +5,13 @@ require '../database/db_connect.php'; // Adjust the path as needed
 try {
     // Join seller_service with seller_information to get provider name
     $stmt = $pdo->prepare("
-        SELECT s.service_id, s.service_name, s.service_description, s.service_price, s.status, i.name AS provider_name
+        SELECT s.service_id, s.service_name, s.service_description, s.service_price, s.status, s.service_image, s.service_type, i.name AS provider_name
         FROM seller_service s
         JOIN seller_information i ON s.user_id = i.user_id
         ORDER BY s.service_id DESC
     ");
     $stmt->execute();
     $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
     $countStmt = $pdo->prepare("
         SELECT status, COUNT(*) as count 
@@ -145,87 +144,126 @@ try {
 
                 <!-- Tab Content -->
                 <div class="tab-content" id="serviceTabsContent">
+
                     <!-- Pending Services -->
                     <div class="tab-pane fade show active" id="pending" role="tabpanel">
                         <div class="row">
                             <?php foreach ($services as $service): ?>
-                                <?php if ($service['status'] === 'pending'): ?>
-                                    <div class="col-md-4 mb-4">
-                                        <div class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
-                                            <div class="card-body p-6 flex flex-col justify-between h-full">
-                                                <div>
-                                                    <div class="flex justify-between items-start mb-4">
-                                                        <h5 class="text-xl font-semibold text-gray-800">
-                                                            <?= htmlspecialchars($service['service_name']) ?>
-                                                        </h5>
-                                                        <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
-                                                            Status: <?= ucfirst($service['status']) ?>
-                                                        </span>
-                                                    </div>
-                                                    <p class="text-gray-600 mb-4">
-                                                        <?= htmlspecialchars($service['service_description']) ?>
-                                                    </p>
-                                                    <p class="text-gray-700">
-                                                        <strong>Penyedia:</strong> <?= htmlspecialchars($service['provider_name']) ?><br>
-                                                        <strong>Harga:</strong> Rp <?= number_format($service['service_price'], 0, ',', '.') ?>
-                                                    </p>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-6">
-                                                    <div class="flex space-x-2">
-                                                        <button onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'approved')"
-                                                            class="bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
-                                                            <i class="fas fa-check"></i> Setujui
-                                                        </button>
-                                                        <button onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'rejected')"
-                                                            class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
-                                                            <i class="fas fa-times"></i> Tolak
-                                                        </button>
-                                                    </div>
-                                                </div>
+                            <?php if ($service['status'] === 'pending'): ?>
+                            <div class="col-md-4 mb-4">
+                                <div
+                                    class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
+                                    <div class="card-body p-6 flex flex-col justify-between h-full">
+                                        <div>
+                                            <div
+                                                class="relative w-full pb-[75%] mb-4 bg-gray-100 rounded-md overflow-hidden">
+                                                <img src="<?= htmlspecialchars($service['service_image']) ?>"
+                                                    alt="Service Image"
+                                                    class="absolute top-0 left-0 w-full h-full object-cover" />
                                             </div>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
 
+                                            <div class="flex justify-between items-start mb-4">
+                                                <h5 class="text-xl font-semibold text-gray-800">
+                                                    <?= htmlspecialchars($service['service_name']) ?>
+                                                </h5>
 
-                    <!-- Active Services -->
-                    <div class="tab-pane fade" id="active" role="tabpanel">
-                        <div class="row">
-                            <?php foreach ($services as $service): ?>
-                                <?php if ($service['status'] === 'approved'): ?>
-                                <div class="col-md-4 mb-4">
-                                    <div class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
-                                        <div class="card-body p-6 flex flex-col justify-between h-full">
-                                            <div>
-                                                <div class="flex justify-between items-start mb-4">
-                                                    <h5 class="text-xl font-semibold text-gray-800">
-                                                        <?= htmlspecialchars($service['service_name']) ?>
-                                                    </h5>
-                                                    <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                                        Aktif
+                                                <div class="flex space-x-2">
+                                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                                        <?= htmlspecialchars($service['service_type']) ?>
+                                                    </span>
+                                                    <span
+                                                        class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-500 text-white">
+                                                        Status: <?= ucfirst($service['status']) ?>
                                                     </span>
                                                 </div>
-                                                <p class="text-gray-600 mb-4">
-                                                    <?= htmlspecialchars($service['service_description']) ?>
-                                                </p>
-                                                <p class="text-gray-700">
-                                                    <strong>Penyedia:</strong> <?= htmlspecialchars($service['provider_name']) ?><br>
-                                                    <strong>Harga:</strong> Rp <?= number_format($service['service_price'], 0, ',', '.') ?>
-                                                </p>
                                             </div>
-                                            <div class="flex justify-end mt-6">
-                                                <button onclick="deleteService(<?= $service['service_id'] ?>)"
-                                                    class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded transition duration-300">
-                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                            <p class="text-gray-600 mb-4">
+                                                <?= htmlspecialchars($service['service_description']) ?>
+                                            </p>
+                                            <p class="text-gray-700">
+                                                <strong>Penyedia:</strong>
+                                                <?= htmlspecialchars($service['provider_name']) ?><br>
+                                                <strong>Harga:</strong> Rp
+                                                <?= number_format($service['service_price'], 0, ',', '.') ?>
+                                            </p>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-6">
+                                            <div class="flex space-x-2">
+                                                <button
+                                                    onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'approved')"
+                                                    class="bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
+                                                    <i class="fas fa-check"></i> Setujui
+                                                </button>
+                                                <button
+                                                    onclick="updateServiceStatus(<?= $service['service_id'] ?>, 'rejected')"
+                                                    class="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 text-sm">
+                                                    <i class="fas fa-times"></i> Tolak
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Active Services -->
+                    <div class="tab-pane fade" id="active" role="tabpanel">
+                        <div class="row">
+                            <?php foreach ($services as $service): ?>
+                            <?php if ($service['status'] === 'approved'): ?>
+                            <div class="col-md-4 mb-4">
+                                <div
+                                    class="card service-card bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 hover:shadow-xl h-full">
+                                    <div class="card-body p-6 flex flex-col justify-between h-full">
+                                        <div>
+                                            <div
+                                                class="relative w-full pb-[75%] mb-4 bg-gray-100 rounded-md overflow-hidden">
+                                                <img src="<?= htmlspecialchars($service['service_image']) ?>"
+                                                    alt="Service Image"
+                                                    class="absolute top-0 left-0 w-full h-full object-cover" />
+                                            </div>
+
+                                            <div class="flex justify-between items-start mb-4">
+                                                <h5 class="text-xl font-semibold text-gray-800">
+                                                    <?= htmlspecialchars($service['service_name']) ?>
+                                                </h5>
+
+                                                <div class="flex space-x-2">
+                                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                                        <?= htmlspecialchars($service['service_type']) ?>
+                                                    </span>
+                                                    <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                                        Aktif
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <p class="text-gray-600 mb-4">
+                                                <?= htmlspecialchars($service['service_description']) ?>
+                                            </p>
+
+                                            <p class="text-gray-700">
+                                                <strong>Penyedia:</strong>
+                                                <?= htmlspecialchars($service['provider_name']) ?><br>
+                                                <strong>Harga:</strong> Rp
+                                                <?= number_format($service['service_price'], 0, ',', '.') ?>
+                                            </p>
+
+                                        </div>
+                                        <div class="flex justify-end mt-6">
+                                            <button onclick="deleteService(<?= $service['service_id'] ?>)"
+                                                class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded transition duration-300">
+                                                <i class="fas fa-trash mr-1"></i> Hapus
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -242,50 +280,49 @@ try {
             if (!confirm('Apakah Anda yakin ingin menghapus jasa ini?')) return;
 
             fetch('../database/admin-service.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: 'deleteService',
-                    service_id: serviceId
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'deleteService',
+                        service_id: serviceId
+                    })
                 })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(err => {
-                alert('Something went wrong!');
-                console.error(err);
-            });
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(err => {
+                    alert('Something went wrong!');
+                    console.error(err);
+                });
         }
 
         function updateServiceStatus(serviceId, status) {
             fetch('../database/admin-service.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: 'updateServiceStatus',
-                    service_id: serviceId,
-                    status: status
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'updateServiceStatus',
+                        service_id: serviceId,
+                        status: status
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    // Reload or update the UI
-                    location.reload();
-                }
-            });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        // Reload or update the UI
+                        location.reload();
+                    }
+                });
         }
-
     </script>
 </body>
 
