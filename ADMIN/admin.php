@@ -1,38 +1,48 @@
 <?php
-include "../database/db_connect.php"; // Include your PDO connection
+include "../database/db_connect.php"; // Include your MySQLi connection
 session_start();
 
 $user_id = $_SESSION["user_id"];
 
 try {
-    $stmt = $pdo->prepare("
+    $sql = "
         SELECT users.*, user_information.*
         FROM users
         INNER JOIN user_information ON users.user_id = user_information.user_id
-        WHERE users.user_id = :id
-    ");
-    $stmt->bindParam(":id", $user_id, PDO::PARAM_INT);
+        WHERE users.user_id = ?
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
 
-    $stmt_total = $pdo->prepare("SELECT COUNT(*) AS total_users FROM users");
-    $stmt_total->execute();
-    $total_users = $stmt_total->fetch(PDO::FETCH_ASSOC)["total_users"];
+    $total_users = 0;
+    $result_total = $conn->query("SELECT COUNT(*) AS total_users FROM users");
+    if ($result_total) {
+        $row = $result_total->fetch_assoc();
+        $total_users = (int)$row['total_users'];
+        $result_total->free();
+    }
 
-    $stmt_services = $pdo->prepare("SELECT COUNT(*) AS total_services FROM seller_service");
-    $stmt_services->execute();
-    $total_services = $stmt_services->fetch(PDO::FETCH_ASSOC)["total_services"];
-
+    $total_services = 0;
+    $result_services = $conn->query("SELECT COUNT(*) AS total_services FROM seller_service");
+    if ($result_services) {
+        $row = $result_services->fetch_assoc();
+        $total_services = (int)$row['total_services'];
+        $result_services->free();
+    }
 
     if (!$user) {
         header("Location: ./auth.php");
         exit();
     }
-} catch (PDOException $e) {
+} catch (Exception $e) {
     echo "Query failed: " . $e->getMessage();
     exit();
 }
 ?>
+
 
 
 

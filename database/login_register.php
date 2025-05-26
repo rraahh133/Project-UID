@@ -1,12 +1,11 @@
 <?php
-include('db_connect.php');
+include('db_connect.php'); // Assumes $conn is defined as a mysqli connection
 
 session_start();
 
 if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
     header('Content-Type: application/json');
 } else {
-    // Don't set the header for normal page requests
     header('Content-Type: text/html; charset=UTF-8');
 }
 
@@ -24,21 +23,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Check if email already exists
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
-        $stmt->bindParam(':email', $email);
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
         $stmt->execute();
+        $result = $stmt->get_result();
 
-        if ($stmt->rowCount() > 0) {
+        if ($result->num_rows > 0) {
             echo json_encode(["status" => "error", "message" => "Email already taken. Please Use Another Email"]);
             exit;
         }
 
         // Register user
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (email, password, usertype) VALUES (:email, :password, :usertype)");
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':password', $hashed_password);
-        $stmt->bindParam(':usertype', $usertype);
+        $stmt = $conn->prepare("INSERT INTO users (email, password, usertype) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $email, $hashed_password, $usertype);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Registration successful!"]);
@@ -46,51 +44,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo json_encode(["status" => "error", "message" => "Something went wrong. Please try again."]);
         }
 
+        $stmt->close();
+
     } else if (isset($_POST['login'])) {
         // LOGIN SECTION
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $usertype = $_POST['usertype']; // Added usertype
+        $usertype = $_POST['usertype'];
 
-        // Prepare statement to fetch user by email
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email AND usertype = :usertype");
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':usertype', $usertype); // Bind usertype parameter
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND usertype = ?");
+        $stmt->bind_param("ss", $email, $usertype);
         $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
 
         if ($user) {
             if (password_verify($password, $user['password'])) {
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
-                session_regenerate_id(true); // Optional but safer
+                session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['usertype'] = $user['usertype'];
-                
-                // Send success response and redirect
+
                 if ($user['usertype'] == 'customer') {
                     $redirectUrl = './User/user_dashboard.php';
                 } else if ($user['usertype'] == 'seller') {
                     $redirectUrl = './Seller/provider-dashboard.php';
                 }
-    
+
                 echo json_encode([
                     "status" => "success",
                     "message" => "Login successful!",
                     "redirect" => $redirectUrl
                 ]);
-                
             } else {
                 echo json_encode(["status" => "error", "message" => "Incorrect password."]);
-            }   
+            }
         } else {
             echo json_encode(["status" => "error", "message" => "No user found with that email."]);
         }
+
+        $stmt->close();
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid request."]);
     }
-} else {
 }
 ?>

@@ -46,7 +46,7 @@
                   <div class="field">
                      <select name="usertype" required>
                         <option value="customer">Customer</option>
-                        <option value="seller">Seller</option>
+                        <option value="seller">Penyedia Jasa</option>
                      </select>
                   </div>
                   <div class="field btn">

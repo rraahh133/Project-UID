@@ -1,41 +1,55 @@
 <?php
 // Include DB connection
-require '../database/db_connect.php'; // Adjust the path as needed
+require '../database/db_connect.php'; // Adjust path as needed
+
+// $conn is assumed to be your mysqli connection
+
+$services = [];
+$statusCounts = [
+    'approved' => 0,
+    'pending' => 0,
+    'rejected' => 0
+];
 
 try {
-    // Join seller_service with seller_information to get provider name
-    $stmt = $pdo->prepare("
+    // Get services with provider name
+    $sql = "
         SELECT s.service_id, s.service_name, s.service_description, s.service_price, s.status, s.service_image, s.service_type, i.name AS provider_name
         FROM seller_service s
         JOIN seller_information i ON s.user_id = i.user_id
         ORDER BY s.service_id DESC
-    ");
-    $stmt->execute();
-    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ";
 
-    $countStmt = $pdo->prepare("
-        SELECT status, COUNT(*) as count 
-        FROM seller_service 
-        GROUP BY status
-    ");
-    $countStmt->execute();
-    $statusCountsRaw = $countStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $statusCounts = [
-        'approved' => 0,
-        'pending' => 0,
-        'rejected' => 0
-    ];
-    foreach ($statusCountsRaw as $row) {
-        $status = $row['status'];
-        $statusCounts[$status] = (int)$row['count'];
+    if ($result = $conn->query($sql)) {
+        $services = $result->fetch_all(MYSQLI_ASSOC);
+        $result->free();
+    } else {
+        throw new Exception("Error fetching services: " . $conn->error);
     }
 
-} catch (PDOException $e) {
-    echo "Error fetching services: " . $e->getMessage();
+    // Get counts grouped by status
+    $countSql = "SELECT status, COUNT(*) AS count FROM seller_service GROUP BY status";
+    $countResult = $conn->query($countSql);
+    if (!$countResult) {
+        throw new Exception("Error fetching status counts: " . $conn->error);
+    }
+    while ($row = $countResult->fetch_assoc()) {
+        $status = $row['status'];
+        $count = (int)$row['count'];
+
+        if (array_key_exists($status, $statusCounts)) {
+            $statusCounts[$status] = $count;
+        }
+    }
+    $countResult->free();
+
+
+} catch (Exception $e) {
+    echo $e->getMessage();
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">

@@ -1,19 +1,7 @@
 <?php
-session_start();
-include ('../database/db_connect.php'); // Include your PDO connection
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
-
-// Fetch user data if needed
-$user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT * FROM user_information WHERE user_id = :id");
-$stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+require '../database/service_functions.php';
+$kategori = isset($_POST['kategori']) ? $_POST['kategori'] : 'all';
+$user = getUserData($conn);
 ?>
 
 <html lang="en">
@@ -104,7 +92,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
                     <!-- Email Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="email">Email</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($user['email'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($user['user_email'] ?? ''); ?>" />
                     </div>
 
                     <!-- Phone Field -->

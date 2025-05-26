@@ -1,33 +1,13 @@
 <?php
-include ('../database/db_connect.php'); // Include your PDO connection
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'])) {
+session_start();
+if (empty($_SESSION['user_id'])) {
     header("Location: ../auth.php");
     exit;
 }
-
-$user_id = $_SESSION['user_id'];
-
-try {
-    $stmt = $pdo->prepare("
-    SELECT users.*, seller_information.*
-    FROM users
-    LEFT JOIN seller_information ON users.user_id = seller_information.user_id
-    WHERE users.user_id = :id
-    ");
-    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        header("Location: ../auth.php");
-        exit;
-    }
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
+include('../database/service_functions.php');
+$user = getUserData($conn, $_SESSION['user_id']);
+if (!$user) {
+    header("Location: ../auth.php");
     exit;
 }
 ?>
@@ -94,7 +74,7 @@ try {
                         <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="w-36 h-36 rounded-full border shadow">
                         <div>
                             <h2 class="text-2xl font-bold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                            <p class="text-gray-600"><?= htmlspecialchars($user['email'] ?? '-') ?></p>
+                            <p class="text-gray-600"><?= htmlspecialchars($user['user_email'] ?? '-') ?></p>
                         </div>
                     </div>
 

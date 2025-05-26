@@ -1,34 +1,7 @@
 <?php
-include('./database/db_connect.php'); // Your PDO connection
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$user = null; // Default if not logged in
-
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT 
-                users.user_id,
-                users.username,
-                user_information.profile_picture
-            FROM users
-            LEFT JOIN user_information ON users.user_id = user_information.user_id
-            WHERE users.user_id = :id
-        ");
-        $stmt->execute([':id' => $user_id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        // Handle error if you want, or ignore silently here
-    }
-}
+require './database/service_functions.php';
+$user = getUserData($conn);
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,9 +99,9 @@ if (isset($_SESSION['user_id'])) {
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Fotografi</h3>
                                 <p class="text-gray-600 text-sm">Prewed, pernikahan, DLL</p>
-                                <a href="payment.php?service=Jasa%20Fotografi&price=Rp%20500.000%20-%202.000.000&category=Fotografi" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="setCategory('Fotografi')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <!-- Card 2 -->
@@ -137,9 +110,9 @@ if (isset($_SESSION['user_id'])) {
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Graphic Design</h3>
                                 <p class="text-gray-600 text-sm">Membuat logo, poster, DLL</p>
-                                <a href="payment.php?service=Jasa%20Graphic%20Design&price=Rp%20300.000%20-%201.500.000&category=Desain" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="setCategory('Design')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <!-- Card 3 -->
@@ -148,9 +121,9 @@ if (isset($_SESSION['user_id'])) {
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Pembuatan Website</h3>
                                 <p class="text-gray-600 text-sm">untuk bisnis atau portofolio pribadi</p>
-                                <a href="payment.php?service=Jasa%20Pembuatan%20Website&price=Rp%202.000.000%20-%2010.000.000&category=Teknologi" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="setCategory('Other')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <!-- Card 4 -->
@@ -159,9 +132,9 @@ if (isset($_SESSION['user_id'])) {
                             <div class="p-4">
                                 <h3 class="text-lg font-semibold">Jasa Kebersihan</h3>
                                 <p class="text-gray-600 text-sm">membersihkan rumah, kantor, DLL</p>
-                                <a href="payment.php?service=Jasa%20Kebersihan&price=Rp%20200.000%20-%20500.000&category=Kebersihan" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="setCategory('Kebersihan')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Pesan Sekarang
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <!-- Card 5 -->
@@ -189,7 +162,8 @@ if (isset($_SESSION['user_id'])) {
                     </a>
                 </div>
             </div>
-        </div>
+        </div>  
+
     </section>
 
     <section class="testimonial-section" id="testimonial-section">
@@ -277,8 +251,22 @@ if (isset($_SESSION['user_id'])) {
     </footer>
 
 </section>
-
 <script src="./assets/js/script.js"></script>
+<script>
+    function setCategory(kategori) {
+    const form = document.createElement('form');
+    form.method = 'POST'; // or use 'GET' if catalog.php reads from $_GET
+    form.action = '/Projek/catalog.php';
 
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'kategori';
+    input.value = kategori;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 </body>
 </html>

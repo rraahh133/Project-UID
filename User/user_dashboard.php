@@ -1,47 +1,8 @@
 <?php
-include ('../database/db_connect.php'); // Include your PDO connection
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'])) {
+require '../database/service_functions.php';
+$user = getUserData($conn);
+if (!$user) {
     header("Location: ../auth.php");
-    exit;
-}
-
-$user_id = $_SESSION['user_id'];
-
-try {
-    $stmt = $pdo->prepare("
-        SELECT 
-            users.user_id,
-            users.username,
-            users.email AS user_email,
-            users.usertype,
-            users.name,
-            users.birthdate,
-            users.gender,
-            users.phone,
-            user_information.email AS info_email,
-            user_information.name AS info_name,
-            user_information.birthdate AS info_birthdate,
-            user_information.gender AS info_gender,
-            user_information.phone AS info_phone,
-            user_information.profile_picture
-        FROM users
-        LEFT JOIN user_information ON users.user_id = user_information.user_id
-        WHERE users.user_id = :id
-    ");
-    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        header("Location: ../auth.php");
-        exit;
-    }
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
     exit;
 }
 ?>
@@ -120,19 +81,19 @@ try {
                     <div class="space-y-4 text-gray-700">
                         <div class="flex justify-between border-b py-2">
                             <span class="font-medium">Nama</span>
-                            <span><?= htmlspecialchars($user['name'] ?? '-') ?></span>
+                            <span><?= htmlspecialchars($user['info_name'] ?? '-') ?></span>
                         </div>
                         <div class="flex justify-between border-b py-2">
                             <span class="font-medium">Tanggal Lahir</span>
-                            <span><?= htmlspecialchars($user['birthdate'] ?? '-') ?></span>
+                            <span><?= htmlspecialchars($user['info_birthdate'] ?? '-') ?></span>
                         </div>
                         <div class="flex justify-between border-b py-2">
                             <span class="font-medium">Jenis Kelamin</span>
-                            <span><?= htmlspecialchars($user['gender'] ?? '-') ?></span>
+                            <span><?= htmlspecialchars($user['info_gender'] ?? '-') ?></span>
                         </div>
                         <div class="flex justify-between border-b py-2">
                             <span class="font-medium">Nomor HP</span>
-                            <span><?= htmlspecialchars($user['phone'] ?? '-') ?></span>
+                            <span><?= htmlspecialchars($user['info_phone'] ?? '-') ?></span>
                         </div>
                     </div>
 

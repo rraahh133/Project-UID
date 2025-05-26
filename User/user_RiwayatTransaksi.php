@@ -1,36 +1,17 @@
 <?php
-include ('../database/db_connect.php');
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+include('../database/service_functions.php'); // where getUserData() is defined
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth.php");
     exit;
 }
-
 $user_id = $_SESSION['user_id'];
-
-try {
-    $stmt = $pdo->prepare("
-    SELECT users.*, user_information.*
-    FROM users
-    LEFT JOIN user_information ON users.user_id = user_information.user_id
-    WHERE users.user_id = :id
-    ");
-    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        header("Location: ../auth.php");
-        exit;
-    }
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
+$user = getUserData($conn, $user_id);
+if (!$user) {
+    header("Location: ../auth.php");
     exit;
 }
 ?>
+
 
 <html lang="en">
 

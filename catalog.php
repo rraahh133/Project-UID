@@ -1,39 +1,9 @@
 <?php
 require './database/service_functions.php';
 $kategori = isset($_POST['kategori']) ? $_POST['kategori'] : 'all';
-$services = getFilteredServices($kategori);
+$services = getFilteredServices($conn, $kategori);
+$user = getUserData($conn);
 ?>
-
-<?php
-include('./database/db_connect.php'); // Your PDO connection
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$user = null; // Default if not logged in
-
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT 
-                users.user_id,
-                users.username,
-                user_information.profile_picture
-            FROM users
-            LEFT JOIN user_information ON users.user_id = user_information.user_id
-            WHERE users.user_id = :id
-        ");
-        $stmt->execute([':id' => $user_id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        // Handle error if you want, or ignore silently here
-    }
-}
-?>
-
 
 
 <!DOCTYPE html>
@@ -60,20 +30,12 @@ if (isset($_SESSION['user_id'])) {
 
 <body class="bg-gray-50">
 
-
-
     <header class="bg-white shadow-md">
         <div class="flex items-center justify-between px-6 py-4">
             <!-- Logo -->
             <a href="index.php" class="text-xl md:text-2xl font-bold text-black mr-auto no-underline">SiBantu</a>
 
             <!-- Center Nav -->
-            <div class="absolute left-1/2 transform -translate-x-1/2 hidden md:flex gap-6">
-
-                <a href="#testimonial-section" class="text-gray-700 hover:text-blue-500">Testimonial</a>
-                <a href="#explore-section" class="text-gray-700 hover:text-blue-500">Katalog</a>
-            </div>
-
             <!-- Right Nav -->
             <div class="hidden md:flex items-center gap-4">
                 <?php if ($user): ?>
@@ -192,18 +154,25 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
             <?php endforeach; ?>
-
         </div>
+
     </div>
 
-    <?php require './ZIDAN/footer.php'; ?>
+    <?php require './User/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+
+    // Filter Function kategori
     function setCategory(kategori) {
         document.getElementById('kategoriInput').value = kategori;
         document.getElementById('filterForm').submit();
+    }
+
+    // disable resubmit on refresh page
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
     }
     </script>
 </body>

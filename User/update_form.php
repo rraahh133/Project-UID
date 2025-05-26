@@ -1,44 +1,20 @@
 <?php
-include ('../database/db_connect.php'); // Include your PDO connection
+include('../database/service_functions.php'); // where getUserData() is defined
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth.php");
     exit;
 }
-
 $user_id = $_SESSION['user_id'];
+$user = getUserData($conn, $user_id);
 
-try {
-    $stmt = $pdo->prepare("
-    SELECT users.*, user_information.*
-    FROM users
-    LEFT JOIN user_information ON users.user_id = user_information.user_id
-    WHERE users.user_id = :id
-    ");
-    $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $stmt1 = $pdo->prepare("SELECT * FROM users WHERE user_id = :id");
-    $stmt1->bindParam(':id', $user_id, PDO::PARAM_INT);
-    $stmt1->execute();
-    $user = $stmt1->fetch(PDO::FETCH_ASSOC);
-    $email_from_users = $user['email'] ?? null;
-
-
-    if (!$user) {
-        header("Location: ../auth.php");
-        exit;
-    }
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
+if (!$user) {
+    header("Location: ../auth.php");
     exit;
 }
-
-
+$email_from_users = $user['user_email'] ?? null;
 ?>
 
 <html lang="en">

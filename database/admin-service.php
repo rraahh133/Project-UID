@@ -1,5 +1,5 @@
 <?php
-include('db_connect.php');
+include('db_connect.php'); // Ensure this defines $conn as a mysqli connection
 session_start();
 
 // JSON response headers
@@ -31,45 +31,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        try {
-            $stmt = $pdo->prepare("UPDATE seller_service SET status = :status WHERE service_id = :service_id");
-            $success = $stmt->execute([
-                ':status' => $newStatus,
-                ':service_id' => $serviceId
-            ]);
+        $stmt = $conn->prepare("UPDATE seller_service SET status = ? WHERE service_id = ?");
+        $stmt->bind_param("si", $newStatus, $serviceId);
+        $success = $stmt->execute();
 
-            echo json_encode([
-                'success' => $success,
-                'message' => $success ? 'Status updated successfully' : 'Failed to update status'
-            ]);
-        } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-        }
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Unknown action']);
-    }
-
-
-    if ($action === 'deleteService') {
+        echo json_encode([
+            'success' => $success,
+            'message' => $success ? 'Status updated successfully' : 'Failed to update status'
+        ]);
+        $stmt->close();
+    } elseif ($action === 'deleteService') {
         $serviceId = isset($_POST['service_id']) ? intval($_POST['service_id']) : 0;
         if ($serviceId === 0) {
             echo json_encode(['success' => false, 'message' => 'Invalid service ID']);
             exit;
         }
-        try {
-            $stmt = $pdo->prepare("DELETE FROM seller_service WHERE service_id = :service_id");
-            $success = $stmt->execute([':service_id' => $serviceId]);
-    
-            echo json_encode([
-                'success' => $success,
-                'message' => $success ? 'Service deleted successfully' : 'Failed to delete service'
-            ]);
-        } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-        }
+
+        $stmt = $conn->prepare("DELETE FROM seller_service WHERE service_id = ?");
+        $stmt->bind_param("i", $serviceId);
+        $success = $stmt->execute();
+
+        echo json_encode([
+            'success' => $success,
+            'message' => $success ? 'Service deleted successfully' : 'Failed to delete service'
+        ]);
+        $stmt->close();
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Unknown action']);
     }
-    
-    
 } else {
     echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid']);
 }

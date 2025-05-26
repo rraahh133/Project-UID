@@ -31,27 +31,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        // Insert query
-        $stmt = $pdo->prepare("
+        $stmt = mysqli_prepare($conn, "
             INSERT INTO user_addresses (user_id, nama_penerima, nomor_telepon, alamat_lengkap, keterangan)
-            VALUES (:user_id, :nama_penerima, :nomor_telepon, :alamat_lengkap, :keterangan)
+            VALUES (?, ?, ?, ?, ?)
         ");
-        $success = $stmt->execute([
-            ':user_id' => $userid,
-            ':nama_penerima' => $nama_penerima,
-            ':nomor_telepon' => $nomor_telepon,
-            ':alamat_lengkap' => $alamat_lengkap,
-            ':keterangan' => $keterangan
-        ]);
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "issss", $userid, $nama_penerima, $nomor_telepon, $alamat_lengkap, $keterangan);
+            $success = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
 
-        if ($success) {
-            echo json_encode(['success' => true]);
+            if ($success) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to save address']);
+            }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to save address']);
+            echo json_encode(['success' => false, 'message' => 'Failed to prepare statement']);
         }
+
     } else if ($action === 'update') {
         $requiredFields = ['address_id', 'nama_penerima', 'nomor_telepon', 'alamat_lengkap', 'keterangan'];
-        
+
         // Validate required fields
         foreach ($requiredFields as $field) {
             if (empty($_POST[$field])) {
@@ -60,48 +60,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
 
-        // Sanitize and retrieve POST data
         $id = $_POST['address_id'];
         $nama_penerima = trim($_POST['nama_penerima']);
         $nomor_telepon = trim($_POST['nomor_telepon']);
         $alamat_lengkap = trim($_POST['alamat_lengkap']);
         $keterangan = trim($_POST['keterangan']) ?: null;
+
         $user_id = $_SESSION['user_id'] ?? null;
 
-        // Check if user is logged in
         if (!$user_id) {
             echo json_encode(['success' => false, 'message' => 'User not logged in']);
             exit;
         }
 
-        try {
-            // Prepare and execute update query
-            $stmt = $pdo->prepare("UPDATE user_addresses SET nama_penerima = ?, nomor_telepon = ?, alamat_lengkap = ?, keterangan = ? WHERE id = ? AND user_id = ?");
-            $success = $stmt->execute([$nama_penerima, $nomor_telepon, $alamat_lengkap, $keterangan, $id, $user_id]);
+        $stmt = mysqli_prepare($conn, "UPDATE user_addresses SET nama_penerima = ?, nomor_telepon = ?, alamat_lengkap = ?, keterangan = ? WHERE id = ? AND user_id = ?");
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "ssssii", $nama_penerima, $nomor_telepon, $alamat_lengkap, $keterangan, $id, $user_id);
+            $success = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+
             echo json_encode(['success' => $success, 'message' => $success ? 'Address updated successfully' : 'Failed to update address']);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to prepare statement']);
         }
+
     } else if ($action === 'delete') {
         if (isset($_POST['address_id']) && !empty($_POST['address_id'])) {
             $addressId = $_POST['address_id'];
-            $userId = $_SESSION['user_id'] ?? null; // Assuming user_id is stored in session
-    
-            // Ensure user is logged in
+            $userId = $_SESSION['user_id'] ?? null;
+
             if (!$userId) {
                 echo json_encode(['success' => false, 'message' => 'User not logged in']);
                 exit;
             }
-    
-            // Delete query
-            $stmt = $pdo->prepare("DELETE FROM user_addresses WHERE id = :id AND user_id = :user_id");
-            $success = $stmt->execute([
-                ':id' => $addressId,
-                ':user_id' => $userId
-            ]);
-    
-            // Return success or failure response
-            echo json_encode(['success' => $success, 'message' => $success ? 'Address deleted successfully' : 'Failed to delete address']);
+
+            $stmt = mysqli_prepare($conn, "DELETE FROM user_addresses WHERE id = ? AND user_id = ?");
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "ii", $addressId, $userId);
+                $success = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+
+                echo json_encode(['success' => $success, 'message' => $success ? 'Address deleted successfully' : 'Failed to delete address']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to prepare statement']);
+            }
         } else {
             echo json_encode(['success' => false, 'message' => 'Address ID is required']);
         }

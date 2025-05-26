@@ -95,15 +95,14 @@
                         <input type="submit" value="Send Reset Link">
                     </div>
                     <div class="signup-link">
-                        Remembered your password? <a href="login_page.php">Login</a>
+                        Remembered your password? <a href="auth.php">Login</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div id="resetModal" class="modal">
+        <div id="resetModal" class="modal">
         <div class="modal-content">
             <h2>Password Reset Link Sent</h2>
             <p>Link reset password sudah terkirim ke email Anda. Silakan cek inbox atau folder spam.</p>
@@ -112,25 +111,16 @@
     </div>
 
     <script>
-        // Get the modal and close button
         var modal = document.getElementById("resetModal");
         var closeModal = document.getElementById("closeModal");
-
-        // Get the form
         var form = document.getElementById("forgotPasswordForm");
-
-        // When the form is submitted, show the modal
         form.onsubmit = function(event) {
-            event.preventDefault(); // Prevent form from submitting
-            modal.style.display = "block"; // Show the modal
+            event.preventDefault();
+            modal.style.display = "block";
         }
-
-        // When the user clicks on the close button, close the modal
         closeModal.onclick = function() {
             modal.style.display = "none";
         }
-
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";

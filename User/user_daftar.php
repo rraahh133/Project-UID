@@ -1,31 +1,16 @@
 <?php
 session_start();
-include ('../database/db_connect.php'); // Include your PDO connection
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+if (empty($_SESSION['user_id'])) {
+    header("Location: ../auth.php");
     exit;
 }
-
-// Fetch user data if needed
-$user_id = $_SESSION['user_id'];
-$stmtUser = $pdo->prepare("
-SELECT users.*, user_information.*
-FROM users
-LEFT JOIN user_information ON users.user_id = user_information.user_id
-WHERE users.user_id = :id
-");
-$stmtUser->bindParam(':id', $user_id, PDO::PARAM_INT);
-$stmtUser->execute();
-$user = $stmtUser->fetch(PDO::FETCH_ASSOC);
-
-// Fetch user addresses
-$stmtAddr = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = :id");
-$stmtAddr->bindParam(':id', $user_id, PDO::PARAM_INT);
-$stmtAddr->execute();
-$addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
-
+include('../database/service_functions.php');
+$user = getUserData($conn, $_SESSION['user_id']);
+if (!$user) {
+    header("Location: ../auth.php");
+    exit;
+}
+$addresses = executeQuery($conn, "SELECT * FROM user_addresses WHERE user_id = ?", 'i', [$_SESSION['user_id']]);
 ?>
 
 

@@ -1,25 +1,23 @@
 <?php
-include "../database/db_connect.php"; // your PDO connection
-
-try {
-    $stmt = $pdo->query("
-        SELECT 
-            u.user_id,
-            u.username,
-            u.email,
-            u.usertype,
-            COALESCE(ui.name, 'Not Found') AS info_name
-        FROM users u
-        LEFT JOIN user_information ui ON u.user_id = ui.user_id
-    ");
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
+include "../database/db_connect.php"; // your MySQLi connection ($conn)
+$sql = "
+    SELECT 
+        u.user_id,
+        u.username,
+        u.email,
+        u.usertype,
+        COALESCE(ui.name, 'Not Found') AS info_name
+    FROM users u
+    LEFT JOIN user_information ui ON u.user_id = ui.user_id
+";
+$result = mysqli_query($conn, $sql);
+if (!$result) {
+    echo "Query failed: " . mysqli_error($conn);
     exit();
 }
+$users = mysqli_fetch_all($result, MYSQLI_ASSOC);
+mysqli_free_result($result);
 ?>
-
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -94,55 +92,49 @@ try {
                 </ul>
             </div>
 
-            
-<!-- Your HTML content starts here -->
-<div class="w-full lg:w-10/12 p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h2>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            data-modal-target="addUserModal">
-            <i class="fas fa-plus mr-2"></i>Tambah Pengguna
-        </button>
-    </div>
 
-    <!-- User Table -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full table-auto text-sm text-left text-gray-700">
-                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
-                    <tr>
-                        <th class="px-6 py-4">ID USER</th>
-                        <th class="px-6 py-4">Username</th>
-                        <th class="px-6 py-4">Email</th>
-                        <th class="px-6 py-4">Role</th>
-                        <th class="px-6 py-4">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    <?php foreach ($users as $user): ?>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4"><?= htmlspecialchars($user['user_id']) ?></td>
-                        <td class="px-6 py-4"><?= htmlspecialchars($user['info_name']) ?></td>
-                        <td class="px-6 py-4"><?= htmlspecialchars($user['email']) ?></td>
-                        <td class="px-6 py-4"><?= htmlspecialchars($user['usertype']) ?></td>
-                        <td class="px-6 py-4">
-                            <form method="POST" class="d-inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
-                                <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
-                                <button type="submit" name="delete_user"
-                                    class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+            <!-- Your HTML content starts here -->
+            <div class="w-full lg:w-10/12 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Manajemen Pengguna</h2>
+                </div>
 
+                <div class="bg-white shadow rounded-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto text-sm text-left text-gray-700">
+                            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                                <tr>
+                                    <th class="px-6 py-4">ID USER</th>
+                                    <th class="px-6 py-4">Username</th>
+                                    <th class="px-6 py-4">Email</th>
+                                    <th class="px-6 py-4">Role</th>
+                                    <th class="px-6 py-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <?php foreach ($users as $user): ?>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['user_id']) ?></tdx>
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['info_name']) ?></td>
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['email']) ?></td>
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['usertype']) ?></td>
+                                    <td class="px-6 py-4">
+                                        <form method="POST" class="d-inline"
+                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                            <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
+                                            <button type="submit" name="delete_user"
+                                                class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -182,14 +174,6 @@ try {
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function editUser(userId) {
-            // Implementasi fungsi edit user akan segera hadir!
-            alert('Fitur edit user akan segera hadir!');
-        }
-    </script>
 </body>
-
 </html>
