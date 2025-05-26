@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_user.php");
+    header("Location: ../auth.php");
     exit;
 }
 
@@ -13,17 +13,31 @@ $user_id = $_SESSION['user_id'];
 
 try {
     $stmt = $pdo->prepare("
-    SELECT users.*, seller_information.*
-    FROM users
-    LEFT JOIN seller_information ON users.user_id = seller_information.user_id
-    WHERE users.user_id = :id
+        SELECT 
+            users.user_id,
+            users.username,
+            users.email AS user_email,
+            users.usertype,
+            users.name,
+            users.birthdate,
+            users.gender,
+            users.phone,
+            user_information.email AS info_email,
+            user_information.name AS info_name,
+            user_information.birthdate AS info_birthdate,
+            user_information.gender AS info_gender,
+            user_information.phone AS info_phone,
+            user_information.profile_picture
+        FROM users
+        LEFT JOIN user_information ON users.user_id = user_information.user_id
+        WHERE users.user_id = :id
     ");
     $stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        header("Location: ../login_user.php");
+        header("Location: ../auth.php");
         exit;
     }
 } catch (PDOException $e) {
@@ -32,13 +46,17 @@ try {
 }
 ?>
 
+
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Profil Penyedia Jasa</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>
+        Biodata Diri
+    </title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 </head>
 
@@ -63,7 +81,7 @@ try {
                     <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
                     <div>
                         <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($user['usertype'] ?? 'User') ?></p>
+                        <p class="text-gray-500 text-sm">Member Silver</p>
                     </div>
                 </div>
 
@@ -74,8 +92,8 @@ try {
                         <i class="fas fa-chevron-down ml-2"></i>
                     </button>
                     <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="provider_add-service.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Service</a>
-                        <a href="provider_transaction-history.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
+                        <a href="user_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
+                        <a href="user_RiwayatTransaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>
             </aside>
@@ -85,8 +103,8 @@ try {
                 <div class="bg-white p-8 rounded-xl shadow-md">
                     <!-- Tabs -->
                     <div class="flex gap-6 border-b pb-4 mb-6">
-                        <a href="provider-dashboard.php" class="text-blue-600 font-semibold">Profil Penyedia Jasa</a>
-                        <a href="provider_user-reviews.php" class="text-gray-500 hover:text-blue-600">User Review </a>
+                        <a href="user_dashboard.php" class="text-blue-600 font-semibold">Biodata Diri</a>
+                        <a href="user_daftar.php" class="text-gray-500 hover:text-blue-600">Daftar Alamat</a>
                     </div>
 
                     <!-- Profile Header -->
@@ -94,11 +112,11 @@ try {
                         <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="w-36 h-36 rounded-full border shadow">
                         <div>
                             <h2 class="text-2xl font-bold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                            <p class="text-gray-600"><?= htmlspecialchars($user['email'] ?? '-') ?></p>
+                            <p class="text-gray-600"><?= htmlspecialchars($user['user_email'] ?? '-') ?></p>
                         </div>
                     </div>
 
-                    <!-- Profile Details -->
+                    <!-- Biodata Fields -->
                     <div class="space-y-4 text-gray-700">
                         <div class="flex justify-between border-b py-2">
                             <span class="font-medium">Nama</span>
@@ -120,8 +138,8 @@ try {
 
                     <!-- Edit Button -->
                     <div class="text-center mt-8">
-                        <a href="provider-form.php" class="inline-block bg-gray-800 text-white px-6 py-3 rounded-full shadow hover:bg-gray-700 transition">
-                            Edit Profil
+                        <a href="update_form.php" class="inline-block bg-gray-800 text-white px-6 py-3 rounded-full shadow hover:bg-gray-700 transition">
+                            Edit Biodata
                         </a>
                     </div>
                 </div>
@@ -129,74 +147,9 @@ try {
         </div>
 
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-10 mt-auto">
-            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div>
-                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
-                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="index.php" class="hover:underline">Home</a></li>
-                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
-                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
-
+        <?php require 'footer.php'; ?>
 
     <script>
-        const modal = document.getElementById('confirmation-modal');
-        const notification = document.getElementById('notification');
-        const errorNotification = document.getElementById('error-notification');
-        const saveButton = document.getElementById('save-button');
-        const confirmButton = document.getElementById('confirm-button');
-        const cancelButton = document.getElementById('cancel-button');
-        const menuButton = document.getElementById('menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        saveButton.addEventListener('click', () => {
-            const name = document.getElementById('provider-name').value;
-            const email = document.getElementById('provider-email').value;
-            const phone = document.getElementById('provider-phone').value;
-            const address = document.getElementById('provider-address').value;
-            const description = document.getElementById('provider-description').value;
-
-            if (name && email && phone && address && description) {
-                modal.classList.remove('hidden');
-            } else {
-                errorNotification.classList.remove('hidden');
-                setTimeout(() => {
-                    errorNotification.classList.add('hidden');
-                }, 3000);
-            }
-        });
-
-        confirmButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            notification.classList.remove('hidden');
-            setTimeout(() => {
-                notification.classList.add('hidden');
-            }, 3000);
-        });
-
-        cancelButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        menuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-
         function toggleDropdown(id) {
             var dropdown = document.getElementById(id);
             if (dropdown.classList.contains('hidden')) {

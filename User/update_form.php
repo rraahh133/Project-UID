@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_user.php");
+    header("Location: ../auth.php");
     exit;
 }
 
@@ -30,7 +30,7 @@ try {
 
 
     if (!$user) {
-        header("Location: ../login_user.php");
+        header("Location: ../auth.php");
         exit;
     }
 } catch (PDOException $e) {
@@ -82,7 +82,7 @@ try {
             <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-semibold text-gray-800">Edit Biodata</h2>
-                    <a href="User_dashboard.php" class="inline-flex items-center text-gray-600 hover:text-gray-800 text-lg font-semibold py-2 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all">
+                    <a href="user_dashboard.php" class="inline-flex items-center text-gray-600 hover:text-gray-800 text-lg font-semibold py-2 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all">
                         <i class="fas fa-arrow-left mr-2"></i> Back
                     </a>
                 </div>

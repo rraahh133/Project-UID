@@ -71,8 +71,8 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-chevron-down ml-2"></i>
                     </button>
                     <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="User_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
-                        <a href="User_Riwayat Transaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
+                        <a href="user_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
+                        <a href="user_RiwayatTransaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
                     </div>
                 </div>
             </aside>
@@ -82,8 +82,8 @@ $addresses = $stmtAddr->fetchAll(PDO::FETCH_ASSOC);
                 <div class="bg-white p-8 rounded-xl shadow-md">
                     <!-- Tabs -->
                     <div class="flex gap-6 border-b pb-4 mb-6">
-                        <a href="User_dashboard.php" class="text-gray-500 hover:text-blue-600">Biodata Diri</a>
-                        <a href="User_daftar.php" class="text-blue-600 font-semibold">Daftar Alamat</a>
+                        <a href="user_dashboard.php" class="text-gray-500 hover:text-blue-600">Biodata Diri</a>
+                        <a href="user_daftar.php" class="text-blue-600 font-semibold">Daftar Alamat</a>
                     </div>
 
                     <div class="flex justify-between items-center mb-4">

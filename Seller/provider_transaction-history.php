@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_user.php");
+    header("Location: ../auth.php");
     exit;
 }
 
@@ -23,7 +23,7 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        header("Location: ../login_user.php");
+        header("Location: ../auth.php");
         exit;
     }
 } catch (PDOException $e) {

@@ -1,13 +1,9 @@
-<?php
-include('database/login_register.php');
-?>
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
    <head>
       <meta charset="utf-8">
       <title>Login Registration</title>
-      <link rel="stylesheet" href="./CSS_RAFI/login.css">
+      <link rel="stylesheet" href="./assets/css/login.css">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet">
    </head>
@@ -58,7 +54,7 @@ include('database/login_register.php');
                      <input type="submit" name="login" value="Login">
                   </div>
                   <div class="signup-link">
-                     Not a member? <a href="login_user.php">Signup now</a>
+                     Not a member? <a href="auth.php">Signup now</a>
                   </div>
                </form>
 

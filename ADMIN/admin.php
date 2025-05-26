@@ -25,7 +25,7 @@ try {
 
 
     if (!$user) {
-        header("Location: ./login_user.php");
+        header("Location: ./auth.php");
         exit();
     }
 } catch (PDOException $e) {

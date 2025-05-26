@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_user.php");
+    header("Location: ../auth.php");
     exit;
 }
 
@@ -23,7 +23,7 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        header("Location: ../login_user.php");
+        header("Location: ../auth.php");
         exit;
     }
 } catch (PDOException $e) {
@@ -81,7 +81,7 @@ try {
                         <i class="fas fa-chevron-down ml-2"></i>
                     </button>
                     <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="provider_add-../database/seller-service.php"
+                        <a href="provider_add-service.php"
                             class="block px-4 py-2 hover:bg-gray-100 rounded">Service</a>
                         <a href="provider_transaction-history.php"
                             class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>

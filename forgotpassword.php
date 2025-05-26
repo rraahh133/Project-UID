@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Forgot Password | CodingNepal</title>
-    <link rel="stylesheet" href="./CSS_RAFI/login.css">
+    <link rel="stylesheet" href="./assets/css/login.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* Modal Styles */
