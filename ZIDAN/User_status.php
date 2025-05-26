@@ -124,28 +124,7 @@ try {
         </div>
 
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-10 mt-auto">
-            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div>
-                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
-                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="index.php" class="hover:underline">Home</a></li>
-                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
-                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        <?php require 'footer.php'; ?>
     </div>
 
     <!-- Modal -->
