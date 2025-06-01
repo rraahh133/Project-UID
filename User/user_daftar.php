@@ -27,40 +27,12 @@ $addresses = executeQuery($conn, "SELECT * FROM user_addresses WHERE user_id = ?
 <body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="./../index.php">SiBantu</a>
-            </h1>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-bell text-white text-lg"></i>
-                <i class="fas fa-envelope text-white text-lg"></i>
-                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
-            </div>
-        </header>
+        <?php require '../header.php'; ?>
+
 
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
-            <aside class="w-full md:w-64 bg-white p-6 shadow-md">
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
-                    <div>
-                        <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm">Member Silver</p>
-                    </div>
-                </div>
-
-                <!-- Dropdown -->
-                <div>
-                    <button onclick="toggleDropdown('transaksiDropdown')" class="w-full bg-gray-100 px-4 py-2 rounded flex justify-between items-center text-gray-700 font-medium hover:bg-gray-200">
-                        Transaksi
-                        <i class="fas fa-chevron-down ml-2"></i>
-                    </button>
-                    <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="user_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
-                        <a href="user_RiwayatTransaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
-                    </div>
-                </div>
-            </aside>
+            <?php require './sidebar.php'; ?>
 
             <!-- Main Content -->
             <main class="flex-1 p-6">

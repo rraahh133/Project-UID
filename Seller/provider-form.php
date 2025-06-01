@@ -1,7 +1,20 @@
 <?php
-require '../database/service_functions.php';
-$kategori = isset($_POST['kategori']) ? $_POST['kategori'] : 'all';
-$user = getUserData($conn);
+include('../database/service_functions.php'); // where getUserData() is defined
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth.php");
+    exit;
+}
+$user_id = $_SESSION['user_id'];
+$user = getUserData($conn, $user_id);
+
+if (!$user) {
+    header("Location: ../auth.php");
+    exit;
+}
+$email_from_users = $user['user_email'] ?? null;
 ?>
 
 <html lang="en">
@@ -29,16 +42,8 @@ $user = getUserData($conn);
 <body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="./../index.php">SiBantu</a>
-            </h1>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-bell text-white text-lg"></i>
-                <i class="fas fa-envelope text-white text-lg"></i>
-                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
-            </div>
-        </header>
+        <?php require '../header.php'; ?>
+
 
         <!-- Main Content -->
         <main class="flex-1 p-6">
@@ -54,15 +59,15 @@ $user = getUserData($conn);
                     <!-- Profile Picture Field -->
                     <div class="flex flex-col items-center mb-8">
                         <div class="w-48 h-48 overflow-hidden rounded-full border-4 border-gray-300 shadow-lg mb-4">
-                            <img id="crop_preview" src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" alt="Preview" class="object-cover w-full h-full">
+                            <img id="crop_preview" src="<?= $user['seller_info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['seller_info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" alt="Preview" class="object-cover w-full h-full">
                         </div>
                         <div class="flex flex-col items-center gap-2">
-                            <label class="block text-lg font-medium text-gray-700" for="profile_picture_input">
+                            <label class="block text-lg font-medium text-gray-700" for="seller_info_profile_picture_input">
                                 <span class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all cursor-pointer">
                                     <i class="fas fa-camera mr-2"></i>Ubah Foto Profil
                                 </span>
                             </label>
-                            <input type="file" id="profile_picture_input" accept="image/*" onchange="openCropperModal(event)" class="hidden">
+                            <input type="file" id="seller_info_profile_picture_input" accept="image/*" onchange="openCropperModal(event)" class="hidden">
                             <p class="text-sm text-gray-500">Format yang didukung: JPG, PNG, GIF (Max. 2MB)</p>
                         </div>
                         <input type="hidden" name="cropped_image" id="cropped_image">
@@ -71,35 +76,64 @@ $user = getUserData($conn);
                     <!-- Name Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="name">Nama</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['name'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['seller_info_name'] ?? ''); ?>" />
                     </div>
 
                     <!-- Birthdate Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="birthdate">Tanggal Lahir</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['birthdate'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['seller_info_birthdate'] ?? ''); ?>" />
                     </div>
 
                     <!-- Gender Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="gender">Jenis Kelamin</label>
                         <select class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="gender" name="gender">
-                            <option value="male" <?= ($user['gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Laki-laki</option>
-                            <option value="female" <?= ($user['gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Perempuan</option>
+                            <option value="male" <?= ($user['seller_info_gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Laki-laki</option>
+                            <option value="female" <?= ($user['seller_info_gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Perempuan</option>
                         </select>
                     </div>
 
                     <!-- Email Field -->
+
+                    
                     <div>
-                        <label class="block text-lg font-medium text-gray-700 mb-2" for="email">Email</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($user['user_email'] ?? ''); ?>" />
+                        <label class="block text-lg font-medium text-gray-700 mb-2" for="email">Email (Perhatian: Mengubah email di sini akan mengganti alamat email yang terdaftar)</label>
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($email_from_users ?? '-') ?>" />
                     </div>
 
                     <!-- Phone Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="phone">Nomor Telepon</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['phone'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['seller_info_phone'] ?? ''); ?>" />
                     </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-lg font-medium text-gray-700 mb-2" for="no_rekening">No Rekening</label>
+                            <input
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                id="no_rekening"
+                                name="no_rekening"
+                                placeholder="Masukkan no rekening"
+                                type="text"
+                                value="<?= htmlspecialchars($user['seller_info_no_rekening'] ?? ''); ?>"
+                            />
+                        </div>
+
+                        <div class="w-1/2">
+                            <label class="block text-lg font-medium text-gray-700 mb-2" for="bank">Bank</label>
+                            <input
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                id="bank"
+                                name="bank"
+                                placeholder="Masukkan nama bank"
+                                type="text"
+                                value="<?= htmlspecialchars($user['seller_info_bank'] ?? ''); ?>"
+                            />
+                        </div>
+                    </div>
+
 
                     <!-- Modal for Cropping & Live Preview -->
                     <div id="cropperModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -110,7 +144,7 @@ $user = getUserData($conn);
                             <h3 class="text-lg font-semibold mb-6">Preview</h3>
                                 <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-300 mb-6">
                                     <img id="crop_preview_modal" 
-                                    src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
+                                    src="<?= $user['seller_info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['seller_info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
                                     alt="Crop Preview" 
                                     class="object-cover w-full h-full" 
                                     />
@@ -157,39 +191,17 @@ $user = getUserData($conn);
         </main>
 
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-10 mt-auto">
-            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div>
-                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
-                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="index.php" class="hover:underline">Home</a></li>
-                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
-                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        <?php require '../User/footer.php'; ?>
+
     </div>
 
     <script>
     function openConfirmationModal() {
         document.getElementById('confirmationModal').classList.remove('hidden');
     }
-
     function closeConfirmationModal() {
         document.getElementById('confirmationModal').classList.add('hidden');
     }
-
     function showError(message) {
         const errorEl = document.getElementById('errorNotification');
         errorEl.textContent = message;
@@ -200,8 +212,6 @@ $user = getUserData($conn);
     }
     let cropper;
     let imageFile;
-
-    // Open the Cropper Modal when a file is selected
     function openCropperModal(event) {
         imageFile = event.target.files[0];
         
@@ -238,7 +248,6 @@ $user = getUserData($conn);
         document.getElementById('crop_preview_modal').src = croppedImageDataUrl;
     }
 
-    // Close the cropper modal
     function closeCropperModal() {
         document.getElementById('cropperModal').classList.add('hidden');
         if (cropper) {
@@ -263,31 +272,31 @@ $user = getUserData($conn);
         const gender = document.getElementById('gender').value;
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
-        if (!name || !birthdate || !gender || !email || !phone) {
-            document.getElementById('errorNotification').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('errorNotification').classList.add('hidden');
-            }, 3000);
+        const bank = document.getElementById('bank').value.trim();
+        const no_rekening = document.getElementById('no_rekening').value.trim();
+        if (!name || !birthdate || !gender || !email || !phone || !bank || !no_rekening) {
+            alert('Semua field harus diisi.');
             return;
         }
         const formData = new FormData(form);
         fetch('../database/seller-save_biodata.php', {
             method: 'POST',
             body: formData
-        }).then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('notification').classList.remove('hidden');
-                setTimeout(() => {
-                    document.getElementById('notification').classList.add('hidden');
-                }, 3000);
-            } else {
-                alert('Gagal menyimpan: ' + (data.message || 'Unknown error.'));
+        })
+        .then(async response => {
+            try {
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('notification').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('notification').classList.add('hidden');
+                    }, 3000);
+                } else {
+                }
+            } catch (e) {
+                alert('Gagal menyimpan: ' + "Foto terlalu Besar, maksimal 2MB. Pastikan formatnya JPG, PNG, atau GIF.");
             }
-        }).catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan data.');
-        });
+        })
         closeConfirmationModal();
     }
     </script>

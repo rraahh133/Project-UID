@@ -1,5 +1,5 @@
 <?php
-include('db_connect.php'); // Make sure $conn is defined in this file
+include('db_connect.php'); // Koneksi MySQLi harus ada di file ini
 session_start();
 
 // Set response type
@@ -33,44 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        try {
-            $stmt = $conn->prepare("
-                INSERT INTO seller_service (user_id, service_name, service_description, service_price, service_image, service_type)
-                VALUES (:user_id, :nama_layanan, :deskripsi, :harga, :service_image, :kategori)
-            ");
-            $success = $stmt->execute([
-                ':user_id' => $user_id,
-                ':nama_layanan' => $nama_layanan,
-                ':deskripsi' => $deskripsi,
-                ':harga' => $harga,
-                ':service_image' => $imageBase64,
-                ':kategori' => $kategori
-            ]);
-
-            echo json_encode([
-                'success' => $success,
-                'message' => $success ? 'Layanan berhasil ditambahkan' : 'Gagal menambahkan layanan'
-            ]);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        $stmt = $conn->prepare("
+            INSERT INTO seller_service (user_id, service_name, service_description, service_price, service_image, service_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        if ($stmt === false) {
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            exit;
         }
+
+        $stmt->bind_param("issdss", $user_id, $nama_layanan, $deskripsi, $harga, $imageBase64, $kategori);
+        $success = $stmt->execute();
+
+        echo json_encode([
+            'success' => $success,
+            'message' => $success ? 'Layanan berhasil ditambahkan' : 'Gagal menambahkan layanan'
+        ]);
+
+        $stmt->close();
     }
 
     // Get services
     elseif ($action === 'getservice') {
-        try {
-            $stmt = $conn->prepare("SELECT * FROM seller_service WHERE user_id = :user_id");
-            $stmt->execute([':user_id' => $user_id]);
-            $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if ($services) {
-                echo json_encode(['success' => true, 'services' => $services]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'No services found']);
-            }
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        $stmt = $conn->prepare("SELECT * FROM seller_service WHERE user_id = ?");
+        if ($stmt === false) {
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            exit;
         }
+
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $services = $result->fetch_all(MYSQLI_ASSOC);
+
+        if ($services) {
+            echo json_encode(['success' => true, 'services' => $services]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No services found']);
+        }
+
+        $stmt->close();
     }
 
     // Update service
@@ -88,24 +90,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $harga = trim($_POST['harga']);
         $deskripsi = htmlspecialchars(trim($_POST['deskripsi']));
 
-        try {
-            $stmt = $conn->prepare("
-                UPDATE seller_service 
-                SET service_name = :nama_layanan, service_price = :harga, service_description = :deskripsi
-                WHERE service_id = :service_id AND user_id = :user_id
-            ");
-            $success = $stmt->execute([
-                ':nama_layanan' => $nama_layanan,
-                ':harga' => $harga,
-                ':deskripsi' => $deskripsi,
-                ':service_id' => $service_id,
-                ':user_id' => $user_id
-            ]);
-
-            echo json_encode(['success' => $success, 'message' => $success ? 'Layanan berhasil diperbarui' : 'Gagal memperbarui layanan']);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        $stmt = $conn->prepare("
+            UPDATE seller_service 
+            SET service_name = ?, service_price = ?, service_description = ?
+            WHERE service_id = ? AND user_id = ?
+        ");
+        if ($stmt === false) {
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            exit;
         }
+
+        $stmt->bind_param("sdsii", $nama_layanan, $harga, $deskripsi, $service_id, $user_id);
+        $success = $stmt->execute();
+
+        echo json_encode(['success' => $success, 'message' => $success ? 'Layanan berhasil diperbarui' : 'Gagal memperbarui layanan']);
+
+        $stmt->close();
     }
 
     // Delete service
@@ -116,17 +116,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
-        try {
-            $stmt = $conn->prepare("DELETE FROM seller_service WHERE service_id = :service_id AND user_id = :user_id");
-            $success = $stmt->execute([
-                ':service_id' => $service_id,
-                ':user_id' => $user_id
-            ]);
-
-            echo json_encode(['success' => $success, 'message' => $success ? 'Layanan berhasil dihapus' : 'Gagal menghapus layanan']);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        $stmt = $conn->prepare("DELETE FROM seller_service WHERE service_id = ? AND user_id = ?");
+        if ($stmt === false) {
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            exit;
         }
+
+        $stmt->bind_param("ii", $service_id, $user_id);
+        $success = $stmt->execute();
+
+        echo json_encode(['success' => $success, 'message' => $success ? 'Layanan berhasil dihapus' : 'Gagal menghapus layanan']);
+
+        $stmt->close();
     }
 
 } else {

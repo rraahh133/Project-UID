@@ -10,10 +10,22 @@ if (!$user) {
     header("Location: ../auth.php");
     exit;
 }
+
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$orders = [];
+
+while ($row = mysqli_fetch_assoc($result)) {
+    $service = fetchServiceBySeller($conn, $row['service_id'], $row['seller_id']);
+    $row['service'] = $service;
+    $orders[] = $row;
+}
 ?>
-
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -25,40 +37,11 @@ if (!$user) {
 <body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="./../index.php">SiBantu</a>
-            </h1>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-bell text-white text-lg"></i>
-                <i class="fas fa-envelope text-white text-lg"></i>
-                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
-            </div>
-        </header>
+        <?php require '../header.php'; ?>
 
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
-            <aside class="w-full md:w-64 bg-white p-6 shadow-md">
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
-                    <div>
-                        <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm">Member Silver</p>
-                    </div>
-                </div>
-
-                <!-- Dropdown -->
-                <div>
-                    <button onclick="toggleDropdown('transaksiDropdown')" class="w-full bg-gray-100 px-4 py-2 rounded flex justify-between items-center text-gray-700 font-medium hover:bg-gray-200">
-                        Transaksi
-                        <i class="fas fa-chevron-down ml-2"></i>
-                    </button>
-                    <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="user_status.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Status Pembayaran</a>
-                        <a href="user_RiwayatTransaksi.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
-                    </div>
-                </div>
-            </aside>
+            <?php require './sidebar.php'; ?>
 
             <!-- Main Content -->
             <main class="flex-1 p-6">
@@ -70,7 +53,9 @@ if (!$user) {
                     </div>
 
                     <h2 class="text-2xl font-bold mb-6">Status Pembayaran</h2>
+
                     <div class="overflow-x-auto">
+
                         <table class="min-w-full bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -82,27 +67,45 @@ if (!$user) {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-3 px-4 text-sm text-gray-700">1</td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">TRX123456</td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">01 Desember 2024</td>
-                                    <td class="py-3 px-4 text-sm text-green-500">Lunas</td>
-                                    <td class="py-3 px-4 text-sm text-blue-500 cursor-pointer hover:text-blue-700" onclick="openModal('TRX123456', 'Lunas')">Lihat</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-3 px-4 text-sm text-gray-700">2</td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">TRX654321</td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">29 November 2024</td>
-                                    <td class="py-3 px-4 text-sm text-red-500">Belum Lunas</td>
-                                    <td class="py-3 px-4 text-sm text-blue-500 cursor-pointer hover:text-blue-700" onclick="openModal('TRX654321', 'Belum Lunas')">Lihat</td>
-                                </tr>
+                                <?php if (count($orders) > 0): ?>
+                                    <?php foreach ($orders as $index => $order): ?>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="py-3 px-4 text-sm text-gray-700"><?= $index + 1 ?></td>
+                                            <td class="py-3 px-4 text-sm text-gray-700">
+                                                <?= 'TRX' . htmlspecialchars($order['id']) . '0' . htmlspecialchars($order['customer_id']) ?>
+                                            </td>
+
+                                            <td class="py-3 px-4 text-sm text-gray-700"><?= date("d F Y", strtotime($order['created_at'])) ?></td>
+                                            <?php
+                                                $badgeColor = match (strtolower($order['status'])) {
+                                                    'pending proof', 'Work On Progress' => 'text-yellow-800',
+                                                    'completed', 'verified proof', 'lunas' => 'text-green-800',
+                                                    'declined' => 'text-red-800',
+                                                    default => 'text-gray-800'
+                                                };
+                                            ?>  
+                                            <td class="py-3 px-4 text-sm <?= $badgeColor ?>">
+                                                <?= htmlspecialchars($order['status']) ?>
+                                            </td>
+
+                                            <td class="py-3 px-4 text-sm text-blue-500 cursor-pointer hover:text-blue-700"
+                                                onclick="openModal('<?= $order['id'] ?>')">
+                                                Lihat
+                                            </td>
+                                        </tr>
+                                        
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="5" class="py-3 px-4 text-sm text-gray-500 text-center">Belum ada pesanan.</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </main>
         </div>
-
         <!-- Footer -->
         <?php require 'footer.php'; ?>
     </div>
@@ -138,10 +141,6 @@ if (!$user) {
                             <td class="py-3 px-4 text-sm font-semibold text-gray-700">Metode Pembayaran:</td>
                             <td class="py-3 px-4 text-sm text-gray-700" id="payment-method"></td>
                         </tr>
-                        <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Nama Penerima:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="recipient-name"></td>
-                        </tr>
                         <tr class="hidden" id="note-row">
                             <td class="py-3 px-4 text-sm font-semibold text-red-500">Catatan:</td>
                             <td class="py-3 px-4 text-sm text-red-500" id="transaction-note"></td>
@@ -163,42 +162,39 @@ if (!$user) {
     </div>
 
     <script>
-        function openModal(transactionId, status) {
+        function openModal(transactionId) {
             document.getElementById('modal').classList.remove('hidden');
-            let details = {
-                'TRX123456': {
-                    'serviceType': 'Membersihkan Rumah',
-                    'date': '01 Desember 2024',
-                    'status': 'Lunas',
-                    'amount': 'Rp 100.000',
-                    'paymentMethod': 'Transfer Bank',
-                    'recipientName': 'SiBersih',
-                    'note': '',
-                    'image': 'https://storage.googleapis.com/a1aa/image/rdmu026VRJKOEZ0OAB3FfkROMOtdqqVGWGXjal8VO2YNmJBKA.jpg'
-                },
-                'TRX654321': {
-                    'serviceType': 'Pindahan Rumah',
-                    'date': '29 November 2024',
-                    'status': 'Belum Lunas',
-                    'amount': 'Rp 500.000',
-                    'paymentMethod': 'Transfer Bank',
-                    'recipientName': 'Pindahan satset',
-                    'note': 'Segera lakukan pembayaran sebelum 10 Desember 2024',
-                    'image': 'https://storage.googleapis.com/a1aa/image/4qUQB6qR8kxq4W9V3jJ2R7XqZx1UHtV6L4Qj8MlX6V5T9N8O7R6P5.jpg'
+            <?php
+                $orders_js = [];
+                foreach ($orders as $order) {
+                    $orders_js[$order['id']] = [
+                        'transaction_number' => 'TRX' . htmlspecialchars($order['id']) . '0' . htmlspecialchars($order['customer_id']),
+                        'serviceType' => htmlspecialchars($order['service']['service_type'] ?? ''),
+                        'date' => date("d F Y", strtotime($order['created_at'])),
+                        'status' => htmlspecialchars($order['status']),
+                        'amount' => 'Rp ' . number_format($order['service']['service_price'] ?? 0, 0, ',', '.'),
+                        'paymentmethod' => htmlspecialchars($order['payment_method'] ?? 'BANK'),
+                        'recipientName' => htmlspecialchars($order['recipient_name'] ?? ''),
+                        'note' => htmlspecialchars($order['note'] ?? ''),
+                        'image' => htmlspecialchars($order['service']['service_image'] ?? 'https://storage.googleapis.com/a1aa/image/rdmu026VRJKOEZ0OAB3FfkROMOtdqqVGWGXjal8VO2YNmJBKA.jpg')
+                    ];
                 }
-            };
-
-            let transaction = details[transactionId];
+                echo "const ordersData = " . json_encode($orders_js) . ";";
+            ?>
+            let transaction = ordersData[transactionId];
+            console.log(transaction);
+            if (!transaction) {
+                alert('Transaksi tidak ditemukan.');
+                return;
+            }
             document.getElementById('transaction-id').innerText = transactionId;
             document.getElementById('service-type').innerText = transaction.serviceType;
             document.getElementById('transaction-date').innerText = transaction.date;
             document.getElementById('transaction-status').innerText = transaction.status;
             document.getElementById('transaction-amount').innerText = transaction.amount;
-            document.getElementById('payment-method').innerText = transaction.paymentMethod;
-            document.getElementById('recipient-name').innerText = transaction.recipientName;
+            document.getElementById('payment-method').innerText = transaction.paymentmethod;
             document.getElementById('service-image').src = transaction.image;
             document.getElementById('service-image').alt = `Image of ${transaction.serviceType}`;
-
             if (transaction.note) {
                 document.getElementById('note-row').classList.remove('hidden');
                 document.getElementById('transaction-note').innerText = transaction.note;

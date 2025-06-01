@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 if (empty($_SESSION['user_id'])) {
     header("Location: ../auth.php");
@@ -10,7 +11,48 @@ if (!$user) {
     header("Location: ../auth.php");
     exit;
 }
+
+$user_id = $_SESSION['user_id'];
+// Get orders where the logged-in user is the seller
+$sql = "SELECT * FROM orders WHERE seller_id = ? ORDER BY created_at DESC";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+$orders = [];
+
+while ($row = mysqli_fetch_assoc($result)) {
+    // You can still fetch the service name if needed
+    $service = fetchServiceBySeller($conn, $row['service_id'], $row['seller_id']);
+    $row['service'] = $service;
+    $orders[] = $row;
+}
+
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+$orders = [];
+
+while ($row = mysqli_fetch_assoc($result)) {
+    $customerInfo = getUserData($conn, $row['customer_id']); // Make sure this function exists
+    $row['customer'] = $customerInfo;
+    $service = fetchServiceBySeller($conn, $row['service_id'], $row['seller_id']);
+    $row['service'] = $service;
+    $orders[] = $row;
+}
+
+$totalPendapatan = 0;
+foreach ($orders as $order) {
+    if ($order['status'] !== 'declined') {
+        $totalPendapatan += $order['service']['service_price'];
+    }
+}
+
 ?>
+
 
 
 <html lang="en">
@@ -21,46 +63,18 @@ if (!$user) {
     <title>Total Transaksi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="./../index.php">SiBantu</a>
-            </h1>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-bell text-white text-lg"></i>
-                <i class="fas fa-envelope text-white text-lg"></i>
-                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
-            </div>
-        </header>
+        <?php require '../header.php'; ?>
+
 
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
-            <aside class="w-full md:w-64 bg-white p-6 shadow-md">
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
-                    <div>
-                        <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
-                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($user['usertype'] ?? 'User') ?></p>
-
-                    </div>
-                </div>
-
-                <!-- Dropdown -->
-                <div>
-                    <button onclick="toggleDropdown('transaksiDropdown')" class="w-full bg-gray-100 px-4 py-2 rounded flex justify-between items-center text-gray-700 font-medium hover:bg-gray-200">
-                        Transaksi
-                        <i class="fas fa-chevron-down ml-2"></i>
-                    </button>
-                    <div id="transaksiDropdown" class="hidden mt-2">
-                        <a href="provider_add-service.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Service</a>
-                        <a href="provider_transaction-history.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Riwayat Transaksi</a>
-                    </div>
-                </div>
-            </aside>
+            <?php require './sidebar.php'; ?>
 
             <!-- Main Content -->
             <main class="flex-1 p-6">
@@ -78,11 +92,15 @@ if (!$user) {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div class="bg-white p-4 rounded-lg shadow-sm">
                                     <h3 class="text-lg font-semibold text-gray-600 mb-2">Jumlah Transaksi</h3>
-                                    <p class="text-3xl font-bold text-gray-800" id="total-transactions">7</p>
+                                    <?php $orders_count = count($orders); ?>
+                                    <p class="text-3xl font-bold text-gray-800" id="total-transactions"><?= $orders_count ?></p>
                                 </div>
+
                                 <div class="bg-white p-4 rounded-lg shadow-sm">
                                     <h3 class="text-lg font-semibold text-gray-600 mb-2">Total Pendapatan</h3>
-                                    <p class="text-3xl font-bold text-gray-800">Rp 225.000</p>
+                                    <p class="text-3xl font-bold text-gray-800">
+                                        Rp <?= number_format($totalPendapatan, 0, ',', '.') ?>
+                                    </p>
                                 </div>
                             </div>
 
@@ -91,8 +109,8 @@ if (!$user) {
                                 <div class="border-b border-gray-200">
                                     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="paymentTabs" role="tablist">
                                         <li class="mr-2" role="presentation">
-                                            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="lunas-tab" data-tab="lunas" type="button" role="tab" aria-controls="lunas" aria-selected="true">
-                                                Transaksi Lunas
+                                            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="Transaksi-tab" data-tab="Transaksi" type="button" role="tab" aria-controls="Transaksi" aria-selected="true">
+                                                Transaksi
                                             </button>
                                         </li>
                                         <li class="mr-2" role="presentation">
@@ -105,118 +123,89 @@ if (!$user) {
 
                                 <!-- Tab Content -->
                                 <div id="tabContent" class="mt-4">
-                                    <!-- Lunas Tab -->
-                                    <div id="lunas" class="tab-pane active">
-                                        <div class="space-y-4">
-                                            <!-- Transaction Item 1 -->
+                                    <div id="Transaksi" class="tab-pane active">
+                                        <?php foreach ($orders as $order):?>
                                             <div class="bg-white p-4 rounded-lg shadow-sm">
                                                 <div class="flex justify-between items-start mb-2">
                                                     <div>
-                                                        <h4 class="font-semibold text-gray-800">Pembersihan Rumah</h4>
-                                                        <p class="text-sm text-gray-600">Budi Santoso</p>
+                                                        <h4 class="font-semibold text-gray-800"><?= htmlspecialchars($order['service']['service_name']) ?></h4>
+                                                        <p class="text-sm text-gray-600">Customer: <?= htmlspecialchars($order['customer']['info_name']) ?></p>
                                                     </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">15 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 50.000</p>
-                                                </div>
-                                            </div>
 
-                                            <!-- Transaction Item 2 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Perbaikan AC</h4>
-                                                        <p class="text-sm text-gray-600">Ani Wijaya</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
+                                                    <!-- Status Badge -->
+                                                    <?php if ($order['status'] === 'completed'): ?>
+                                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
+                                                    <?php elseif ($order['status'] === 'Work On Progress'): ?>
+                                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Sedang di proses</span>
+                                                    <?php elseif ($order['status'] === 'verified proof'): ?>
+                                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Tindakan Seller</span>
+                                                    <?php elseif ($order['status'] === 'declined'): ?>
+                                                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Pesanan Ditolak</span>
+                                                    <?php endif; ?>
+                                                    
                                                 </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">14 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 75.000</p>
-                                                </div>
-                                            </div>
 
-                                            <!-- Transaction Item 3 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Cuci Karpet</h4>
-                                                        <p class="text-sm text-gray-600">Dewi Putri</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
                                                 <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">13 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 35.000</p>
+                                                    <p class="text-gray-600"><?= htmlspecialchars($order['created_at']) ?></p>
+                                                    <p class="font-semibold text-gray-800">Rp <?= number_format($order['service']['service_price'], 0, ',', '.') ?></p>
                                                 </div>
-                                            </div>
 
-                                            <!-- Transaction Item 4 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Perbaikan Listrik</h4>
-                                                        <p class="text-sm text-gray-600">Rudi Hartono</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">12 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 65.000</p>
-                                                </div>
-                                            </div>
+                                                <!-- Action Buttons -->
+                                                <div class="mt-3 flex space-x-2">
+                                                    <?php if ($order['status'] === 'verified proof'): ?>
+                                                        <form method="POST" >
+                                                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                            <input type="hidden" name="action" value="take">
+                                                            <button 
+                                                                type="button"
+                                                                class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600" 
+                                                                onclick="takeJob(<?= $order['id'] ?>)">
+                                                                Take Job
+                                                            </button>
+                                                        </form>
 
-                                            <!-- Transaction Item 5 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Pembersihan Kantor</h4>
-                                                        <p class="text-sm text-gray-600">Siti Aminah</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">11 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 100.000</p>
-                                                </div>
-                                            </div>
+                                                        <form method="POST">
+                                                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                            <input type="hidden" name="action" value="cancel">
+                                                            <button 
+                                                                type="button"
+                                                                class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600" 
+                                                                onclick="openConfirmationModal(<?= $order['id'] ?>)">
+                                                                Decline Job
+                                                            </button>
+                                                        </form>
 
-                                            <!-- Transaction Item 6 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Perbaikan Pipa</h4>
-                                                        <p class="text-sm text-gray-600">Ahmad Fadillah</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">10 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 85.000</p>
-                                                </div>
-                                            </div>
+                                                        <?php elseif ($order['status'] === 'Work On Progress'): ?>
+                                                            <div class="flex items-center space-x-2 mt-2">
+                                                                <!-- Job Done Button -->
+                                                                <form method="POST" >
+                                                                    <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                                    <input type="hidden" name="action" value="take">
+                                                                    <button 
+                                                                        type="button"
+                                                                        class="flex items-center px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600" 
+                                                                        onclick="JobDone(<?= $order['id'] ?>)">
+                                                                        Job Done
+                                                                    </button>
+                                                                </form>
 
-                                            <!-- Transaction Item 7 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Pembersihan Taman</h4>
-                                                        <p class="text-sm text-gray-600">Maya Sari</p>
-                                                    </div>
-                                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">9 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 45.000</p>
+                                                                <!-- WhatsApp Button (wrapped in a form, but just acts as a link) -->
+                                                                <form action="https://wa.me/<?= htmlspecialchars($order['customer']['info_phone']) ?>?text=Halo,%20saya%20ingin%20menghubungi%20Anda%20terkait%20order%20<?= urlencode($order['id']) ?>"
+                                                                    method="GET" target="_blank" class="inline">
+                                                                    <button type="submit" class="flex items-center px-3 py-1 bg-white text-green-600 text-sm rounded border border-green-600 hover:bg-green-50 transition">
+                                                                        <i class="fab fa-whatsapp mr-2 text-green-600 text-base leading-none"></i>
+                                                                        WhatsApp
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
-                                        </div>
+                                        <?php endforeach; ?>
                                     </div>
 
                                     <!-- Pending Tab -->
-                                    <div id="pending" class="tab-pane hidden">
+                                    <div id="Transaksi" class="tab-pane hidden">
                                         <div class="space-y-4">
                                             <!-- Pending Transaction 1 -->
                                             <div class="bg-white p-4 rounded-lg shadow-sm">
@@ -269,32 +258,23 @@ if (!$user) {
                         </div>
                     </div>
                 </div>
+
+                <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden" id="confirmationCancelModal">
+                    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Konfirmasi</h2>
+                        <p class="text-lg text-gray-600 mb-6">Apakah Anda yakin Cancel?</p>
+                        <div class="flex justify-between space-x-4">
+                            <button class="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 focus:outline-none" onclick="closeConfirmationModal()">Batal</button>
+                            <button class="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-700 focus:outline-none" onclick="CancelJobConfirm()">Ya, Simpan</button>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
 
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-10 mt-auto">
-            <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div>
-                    <h2 class="text-xl font-bold mb-2">SiBantu</h2>
-                    <p class="text-sm">Mitra andalan Anda untuk layanan sehari-hari. Hubungi kami kapan saja, di mana saja.</p>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Quick Links</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="index.php" class="hover:underline">Home</a></li>
-                        <li><a href="faq.php" class="hover:underline">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Contact Us</h3>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="mailto:support@sibantu.com" class="hover:underline">support@sibantu.com</a></li>
-                        <li><a href="tel:+6281234567890" class="hover:underline">+62 812 3456 7890</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        <?php require '../User/footer.php'; ?>
     </div>
 
     <script>
@@ -338,6 +318,115 @@ if (!$user) {
             // Set first tab as active by default
             tabs[0].click();
         });
+
+
+        let orderIdToCancel = null;
+
+        function openConfirmationModal(orderId) {
+            orderIdToCancel = orderId;
+            document.getElementById('confirmationCancelModal').classList.remove('hidden');
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmationCancelModal').classList.add('hidden');
+            orderIdToCancel = null;
+        }
+
+        function CancelJobConfirm() {
+            if (!orderIdToCancel) return;
+
+            const data = new FormData();
+            data.append('order_id', orderIdToCancel);
+            data.append('action', 'CancelJobSeller');
+
+            fetch('../database/payment.php', {
+                method: 'POST',
+                body: data,
+            })
+            .then(async response => {
+                try {
+                    const data = await response.json();
+                    if (data.success) {
+                        showNotification(data.message || 'Pesanan berhasil dibatalkan.', true);
+                        setTimeout(() => { location.reload(); }, 500);
+                    } else {
+                        showNotification(data.message || 'Gagal membatalkan Pesanan.', false);
+                    }
+                } catch (e) {
+                    showNotification('Gagal membatalkan Pesanan.', false);
+                }
+            })
+            closeConfirmationModal();
+        }
+
+        function takeJob(orderId) {
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('action', 'takeJobSeller');
+
+            fetch('../database/payment.php', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.success);
+                if (data.success) {
+                    showNotification(data.message || 'Pesanan berhasil Diambil.', true);
+                    setTimeout(() => { location.reload(); }, 500);
+                } else {
+                    showNotification(data.message || 'Pesanan Gagal Diambil.', false);
+                    alert(data.message || 'Pesanan Gagal Diambil.');
+                }
+            })
+            .catch(error => {
+                showNotification('Pesanan Gagal Diambil.', false);
+                alert('Pesanan Gagal Diambil.');
+                console.error('Error:', error);
+            });
+        }
+
+
+        function JobDone(orderId) {
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('action', 'JobDone');
+
+            fetch('../database/payment.php', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.success);
+                if (data.success) {
+                    showNotification(data.message || 'Pesanan berhasil Diselesaikan.', true);
+                    setTimeout(() => { location.reload(); }, 500);
+                } else {
+                    showNotification(data.message || 'Pesanan Gagal Diselesaikan.', false);
+                    alert(data.message || 'Pesanan Gagal Diselesaikan.');
+                }
+            })
+            .catch(error => {
+                showNotification('Pesanan Gagal Diselesaikan.', false);
+                alert('Pesanan Gagal Diselesaikan.');
+                console.error('Error:', error);
+            });
+        }
+
+
+        function showNotification(message, isSuccess) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.className = `fixed top-4 right-4 text-white py-3 px-6 rounded-lg shadow-lg ${
+            isSuccess ? 'bg-green-600' : 'bg-red-600'
+        }`;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
     </script>
 </body>
 

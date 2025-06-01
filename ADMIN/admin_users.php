@@ -55,43 +55,8 @@ mysqli_free_result($result);
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h3 class="mb-4">Admin Panel</h3>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="admin.php" class="nav-link">
-                            <i class="fas fa-home me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_users.php" class="nav-link active">
-                            <i class="fas fa-users me-2"></i> Manajemen Pengguna
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_products.php" class="nav-link">
-                            <i class="fas fa-tools me-2"></i> Manajemen Jasa
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_transactions.php" class="nav-link">
-                            <i class="fas fa-shopping-cart me-2"></i> Transaksi
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_reports.php" class="nav-link">
-                            <i class="fas fa-chart-bar me-2"></i> Laporan
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="logout.php" class="nav-link text-danger">
-                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
+            <!-- Sidebar -->    
+            <?php require './sidebar.php'; ?>
 
             <!-- Your HTML content starts here -->
             <div class="w-full lg:w-10/12 p-6">
@@ -111,22 +76,35 @@ mysqli_free_result($result);
                                     <th class="px-6 py-4">Aksi</th>
                                 </tr>
                             </thead>
+
                             <tbody class="divide-y divide-gray-200">
                                 <?php foreach ($users as $user): ?>
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4"><?= htmlspecialchars($user['user_id']) ?></tdx>
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['user_id']) ?></td>
                                     <td class="px-6 py-4"><?= htmlspecialchars($user['info_name']) ?></td>
                                     <td class="px-6 py-4"><?= htmlspecialchars($user['email']) ?></td>
                                     <td class="px-6 py-4"><?= htmlspecialchars($user['usertype']) ?></td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 flex space-x-2">
+                                        <!-- Tombol Edit -->
+                                        <button type="button"
+                                            class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal"
+                                            onclick="populateEditForm('<?= $user['user_id'] ?>', '<?= htmlspecialchars($user['info_name'], ENT_QUOTES) ?>', '<?= $user['email'] ?>', '<?= $user['usertype'] ?>')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        <!-- Tombol Hapus -->
                                         <form method="POST" class="d-inline"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                             <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">
-                                            <button type="submit" name="delete_user"
-                                                class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
+                                            <button type="button" 
+                                                    class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition"
+                                                    onclick="deleteUser(<?= $user['user_id'] ?>)">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -138,42 +116,181 @@ mysqli_free_result($result);
         </div>
     </div>
 
-    <!-- Modal Tambah Pengguna -->
-    <div class="modal fade" id="addUserModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Pengguna Baru</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addUserForm" method="POST" action="add_user.php">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="user">User</option>
-                                <option value="seller">Seller</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </form>
-                </div>
+    <!-- Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="editUserForm" onsubmit="event.preventDefault(); editUser();">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="editUserModalLabel">Edit Pengguna</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <input type="hidden" id="edit_user_id" name="user_id">
+            <div class="mb-3">
+                <label for="edit_name" class="form-label">Nama</label>
+                <input type="text" class="form-control" id="edit_name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="edit_email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="edit_email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="edit_role" class="form-label">Role</label>
+                <select class="form-select" id="edit_role" name="role" required>
+                    <option value="admin">Admin</option>
+                    <option value="customer">customer</option>
+                    <option value="seller">Penyedia Jasa</option>
+                </select>
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
             </div>
         </div>
+        </form>
     </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteUserModalLabel">Konfirmasi Hapus</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            Apakah Anda yakin ingin menghapus pengguna ini?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function populateEditForm(userId, name, email, role) {
+        document.getElementById('edit_user_id').value = userId;
+        document.getElementById('edit_name').value = name;  
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_role').value = role;
+    }
+
+    function deleteUser(user_id) {
+        // Simpan user_id ke variabel closure agar bisa dipakai di event listener tombol modal
+        let userIdToDelete = user_id;
+
+        // Tampilkan modal konfirmasi hapus
+        const deleteModalEl = document.getElementById('deleteUserModal');
+        const deleteModal = new bootstrap.Modal(deleteModalEl);
+        deleteModal.show();
+
+        // Pastikan event listener tombol hapus tidak dobel pasang
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        // Bersihkan listener lama supaya tidak dobel
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        const newConfirmBtn = document.getElementById('confirmDeleteBtn');
+
+        // Pasang listener baru
+        newConfirmBtn.addEventListener('click', function () {
+            // Jalankan proses hapus
+            const formData = new FormData();
+            formData.append('action', 'deleteuser');
+            formData.append('user_id', userIdToDelete);
+
+            fetch('../database/admin-user.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                try {
+                    const data = await response.json();
+                    if (data.success) {
+                        showNotification(data.message || 'Pengguna berhasil dihapus.', true);
+                        location.reload();
+                    } else {
+                        showNotification(data.message || 'Terjadi kesalahan saat menghapus pengguna.', false);
+                    }
+                } catch (e) {
+                    showNotification('Terjadi kesalahan saat menghapus pengguna.', false);
+                }
+            })
+            .catch(() => {
+                showNotification('Terjadi kesalahan saat menghapus pengguna.', false);
+            })
+            .finally(() => {
+                deleteModal.hide();
+            });
+        });
+    }
+
+
+    function editUser() {
+        const userId = document.getElementById('edit_user_id').value;
+        const name = document.getElementById('edit_name').value;
+        const email = document.getElementById('edit_email').value;
+        const role = document.getElementById('edit_role').value; // pastikan id ini sesuai di HTML
+        if (!name || !email || !role) {
+            alert("Semua field wajib diisi.");
+            return;
+        }
+
+        fetch('../database/admin-user.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest' // supaya server tahu ini AJAX
+            },
+            body: new URLSearchParams({
+                action: 'edituser',
+                user_id: userId,
+                name: name,
+                email: email,
+                role: role
+            })
+        })
+        .then(async response => {
+            try {
+                const data = await response.json();
+                if (data.success) {
+                    showNotification('Pengguna berhasil diperbarui.', true);
+                    const editModal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                    editModal.hide();
+                    location.reload();
+                } else {
+                    showNotification('Gagal memperbarui: ' + (data.message || 'Unknown error'), false);
+                }
+            } catch (e) {
+                showNotification('Gagal memperbarui data.', false);
+            }
+        })
+        .catch(() => {
+            showNotification('Gagal menghubungi server.', false);
+        });
+    }
+
+
+    function showNotification(message, isSuccess) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.className = `fixed top-4 right-4 text-white py-3 px-6 rounded-lg shadow-lg ${
+            isSuccess ? 'bg-green-600' : 'bg-red-600'
+        }`;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    </script>
+
 </body>
 </html>

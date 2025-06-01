@@ -3,6 +3,10 @@ require './database/service_functions.php';
 $kategori = isset($_POST['kategori']) ? $_POST['kategori'] : 'all';
 $services = getFilteredServices($conn, $kategori);
 $user = getUserData($conn);
+$dashboardLink = './User/user_dashboard.php';
+if (($user['usertype'] ?? '') === 'seller') {
+    $dashboardLink = './Seller/provider-dashboard.php';
+}
 ?>
 
 
@@ -30,78 +34,15 @@ $user = getUserData($conn);
 
 <body class="bg-gray-50">
 
-    <header class="bg-white shadow-md">
-        <div class="flex items-center justify-between px-6 py-4">
-            <!-- Logo -->
-            <a href="index.php" class="text-xl md:text-2xl font-bold text-black mr-auto no-underline">SiBantu</a>
+    <!-- Header -->
+    <?php include './header.php'; ?>
 
-            <!-- Center Nav -->
-            <!-- Right Nav -->
-            <div class="hidden md:flex items-center gap-4">
-                <?php if ($user): ?>
-                    <div id="user-menu-container" class="relative">
-                        <button 
-                            type="button"
-                            class="flex items-center gap-2 text-gray-800 hover:text-blue-600 focus:outline-none"
-                            id="user-menu-button"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            onclick="document.getElementById('user-dropdown').classList.toggle('hidden')"
-                        >
-                            <span><?= htmlspecialchars($user['username']) ?></span>
-                            <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
-                                alt="Profile Picture"
-                                class="w-10 h-10 rounded-full border-2 border-white"
-                            />
-                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div id="user-dropdown" class="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-50">
-                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                                <a href="./ZIDAN/User_dashboard.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
-                                <a href="logout.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
-                            </div>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="relative group">
-                        <a href="#" class="text-gray-700 hover:text-blue-600">Masuk <span class="ml-1">&#8250;</span></a>
-                        <div class="absolute hidden group-hover:block bg-white shadow-md mt-2 py-2 rounded-md z-10">
-                            <a href="login_user.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Masuk as User</a>
-                            <a href="login_seller.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Masuk as Seller</a>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="md:hidden">
-                <button onclick="toggleMenu()" class="text-gray-700 text-2xl focus:outline-none">&#9776;</button>
-            </div>
+    <section class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Jasa yang Kami Jual</h2>
+            <p class="text-lg md:text-xl">Temukan berbagai layanan terbaik dari penyedia terpercaya di platform SiBantu</p>
         </div>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden hidden flex flex-col gap-4 px-6 py-4 bg-white">
-            <a href="#testimonial-section" class="text-gray-700 hover:text-blue-500">Testimonial</a>
-            <a href="#explore-section" class="text-gray-700 hover:text-blue-500">Katalog</a>
-            <?php if ($user): ?>
-                <a href="./ZIDAN/User_dashboard.php" class="text-gray-700 hover:text-blue-500">Dashboard</a>
-                <a href="logout.php" class="text-gray-700 hover:text-blue-500">Logout</a>
-            <?php else: ?>
-                <div class="relative">
-                    <button onclick="document.getElementById('mobile-login-dropdown').classList.toggle('hidden')" class="text-gray-700 hover:text-blue-500 flex items-center">
-                        Masuk <span class="ml-1">&#8250;</span>
-                    </button>
-                    <div id="mobile-login-dropdown" class="hidden flex flex-col mt-2 space-y-2">
-                        <a href="login_user.php" class="text-gray-700 hover:text-blue-500">Masuk as User</a>
-                        <a href="login_seller.php" class="text-gray-700 hover:text-blue-500">Masuk as Seller</a>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </div>
-    </header>
-
+    </section>  
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
@@ -136,20 +77,19 @@ $user = getUserData($conn);
                         </div>
                         
                         <div class="flex items-center mb-4">
-                            <div class="flex text-yellow-400">
-                                <!-- Assuming no rating data, you can later join/compute it -->
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <i class="far fa-star"></i>
-                                <?php endfor; ?>
-                            </div>
-                            <span class="ml-2 text-gray-600">(No rating)</span>
-                        </div>
+                        </div>  
                         <p class="text-gray-600 mb-4"><?= htmlspecialchars($service['service_description']) ?></p>
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-semibold text-blue-600">Rp <?= number_format($service['service_price'], 0, ',', '.') ?></span>
-                            <a href="payment.php?service=<?= urlencode($service['service_name']) ?>&price=<?= urlencode($service['service_price']) ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                Pesan Sekarang
-                            </a>
+                            <form action="payment.php" method="POST" style="display: inline;">
+                                    <input type="hidden" name="service_id" value="<?= $service['service_id'] ?>">
+                                    <input type="hidden" name="user_id" value="<?= $service['user_id'] ?>">
+                                    
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                        Order Now
+                                    </button>
+                                </form>
+
                         </div>
                     </div>
                 </div>

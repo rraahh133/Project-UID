@@ -50,10 +50,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // LOGIN SECTION
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $usertype = $_POST['usertype'];
 
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND usertype = ?");
-        $stmt->bind_param("ss", $email, $usertype);
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
@@ -66,12 +65,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['email'] = $user['email'];
-                $_SESSION['usertype'] = $user['usertype'];
+                $_SESSION['usertype'] = $user['usertype']; // auto-detected
 
-                if ($user['usertype'] == 'customer') {
+                if ($user['usertype'] === 'customer') {
                     $redirectUrl = './User/user_dashboard.php';
-                } else if ($user['usertype'] == 'seller') {
+                } else if ($user['usertype'] === 'seller') {
                     $redirectUrl = './Seller/provider-dashboard.php';
+                } else if ($user['usertype'] === 'admin') {
+                    $redirectUrl = './ADMIN/admin.php';
+                } else {
+                    $redirectUrl = './'; // default fallback
                 }
 
                 echo json_encode([
@@ -82,11 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 echo json_encode(["status" => "error", "message" => "Incorrect password."]);
             }
-        } else {
-            echo json_encode(["status" => "error", "message" => "No user found with that email."]);
         }
-
-        $stmt->close();
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid request."]);
     }

@@ -1,8 +1,12 @@
 <?php
-include "../database/db_connect.php"; // Include your MySQLi connection
-session_start();
-
+include "../database/service_functions.php"; // Include your MySQLi connection
 $user_id = $_SESSION["user_id"];
+
+$detect = getUserData($conn, $user_id);
+$dashboardLink = './User/user_dashboard.php';
+if (($user['usertype'] ?? '') === 'admin') {
+    $dashboardLink = './admin.php';
+}
 
 try {
     $sql = "
@@ -16,7 +20,6 @@ try {
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
-
     $total_users = 0;
     $result_total = $conn->query("SELECT COUNT(*) AS total_users FROM users");
     if ($result_total) {
@@ -24,18 +27,12 @@ try {
         $total_users = (int)$row['total_users'];
         $result_total->free();
     }
-
     $total_services = 0;
     $result_services = $conn->query("SELECT COUNT(*) AS total_services FROM seller_service");
     if ($result_services) {
         $row = $result_services->fetch_assoc();
         $total_services = (int)$row['total_services'];
         $result_services->free();
-    }
-
-    if (!$user) {
-        header("Location: ./auth.php");
-        exit();
     }
 } catch (Exception $e) {
     echo "Query failed: " . $e->getMessage();
@@ -93,47 +90,12 @@ try {
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h3 class="mb-4">Admin Panel</h3>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="admin.php" class="nav-link active">
-                            <i class="fas fa-home me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_users.php" class="nav-link">
-                            <i class="fas fa-users me-2"></i> Manajemen Pengguna
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_products.php" class="nav-link">
-                            <i class="fas fa-tools me-2"></i> Manajemen Jasa
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_transactions.php" class="nav-link">
-                            <i class="fas fa-shopping-cart me-2"></i> Transaksi
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="admin_reports.php" class="nav-link">
-                            <i class="fas fa-chart-bar me-2"></i> Laporan
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="logout.php" class="nav-link text-danger">
-                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <!-- Sidebar -->    
+            <?php require './sidebar.php'; ?>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <h2 class="mb-4">Dashboard</h2>
-
                 <!-- Statistik Cards -->
                 <div class="row mb-4">
                     <div class="col-md-4">
@@ -308,6 +270,11 @@ try {
                 }
             }
         });
+
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function () {
+        window.location.href = './admin.php';
+    };
     </script>
 </body>
 

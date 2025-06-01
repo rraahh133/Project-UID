@@ -1,6 +1,10 @@
 <?php
 require './database/service_functions.php';
 $user = getUserData($conn);
+$dashboardLink = './User/user_dashboard.php';
+if (($user['usertype'] ?? '') === 'seller') {
+    $dashboardLink = './Seller/provider-dashboard.php';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +37,7 @@ $user = getUserData($conn);
                                 aria-haspopup="true"
                                 onclick="document.getElementById('user-dropdown').classList.toggle('hidden')">
                             <span><?= htmlspecialchars($user['username']) ?></span>
-                            <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
+                            <img src="<?= $user['info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
                                 alt="Profile Picture" 
                                 class="rounded-full w-10 h-10 border-2 border-white" />
                             <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,8 +46,12 @@ $user = getUserData($conn);
                         </button>
                         <div id="user-dropdown" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden z-50">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                                <a href="./User/user_dashboard.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Settings</a>
-                                <a href="logout.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                                <a href="<?= htmlspecialchars($dashboardLink) ?>" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">
+                                    Settings
+                                </a>
+                                <a href="logout.php" class="block px-4 py-2 text-gray-700 hover:bg-gray-100" role="menuitem">
+                                    Logout
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -86,7 +94,10 @@ $user = getUserData($conn);
 
 
     <section class="explore-section" id="explore-section">
-
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Jasa yang Kami Jual</h2>
+            <p class="text-gray-600">Pilih layanan yang sesuai kebutuhan Anda</p>
+        </div>
         <div class="flex justify-center items-center w-full">
             <!-- Horizontal Scrollable Container -->
             <div class="relative w-full max-w-6xl">
@@ -171,45 +182,45 @@ $user = getUserData($conn);
             <h2 class="testimonial-heading">Testimonial</h2>
             <div class="testimonial-grid">
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489716988084235/image.png?ex=677bf9fe&is=677aa87e&hm=c180013f4d9f136f236e9f556c1b65f3670fc6095b8db4fb75ecb9766eab58e7&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489716988084235/image.png?ex=683d1dbe&is=683bcc3e&hm=15df4b321a3b6ea20386ba7c7a7a9ef13506ee68b9a6b2d6fc08be1ff43ce5a0&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Reja Kecap</h3>
+                        <h3 class="testimonial-name">Reja</h3>
                         <p class="testimonial-comment">"SiBantu benar-benar membantu saya dalam banyak hal. Aplikasinya simpel dan mudah digunakan, jadi saya bisa lebih fokus ke pekerjaan saya tanpa banyak gangguan."</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489810927779951/image.png?ex=677bfa15&is=677aa895&hm=e57ffb9aefcc0a5a6678708eefa95b60a830d6b35c0a7e2923898e82ba2d69ea&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489810927779951/image.png?ex=683d1dd5&is=683bcc55&hm=c92fe01f629327c6725d5dbf8787ac3f7f2707594162dbb2ee0710405c4ba5d2&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Rutz Gaming</h3>
+                        <h3 class="testimonial-name">Rutz</h3>
                         <p class="testimonial-comment">"Gak nyangka banget ada aplikasi yang sepraktis ini. Saya jadi bisa lebih gampang atur waktu dan pekerjaan. Benar-benar ngebantu banget!"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489968507916369/image.png?ex=677bfa3a&is=677aa8ba&hm=2c8f958cc19602e5e009c1c3d2671f3f3589b1d548485e49fa91dcfb2a0e351f&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489968507916369/image.png?ex=683d1dfa&is=683bcc7a&hm=4da9bed855e44af70d46c6aa7ac29b4b0192bb71b27aa605226bf98d7437e9d9&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Yoyo bojongsantos</h3>
+                        <h3 class="testimonial-name">Yoyo</h3>
                         <p class="testimonial-comment">"Aplikasi ini bener-bener membantu banget, jadi gak perlu ribet lagi. Semua jadi lebih cepat dan praktis. Saya suka banget!"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491190853799956/image.png?ex=677bfb5e&is=677aa9de&hm=50678bb27f0939c993f4dcf529771f8de1f41f139adade0db1cc31528fe03cfe&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491190853799956/image.png?ex=683d1f1e&is=683bcd9e&hm=647ad613464b2f84ef5c2eb4302819013227dd58732109d7997931416e17e58f&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Natan Krepes</h3>
+                        <h3 class="testimonial-name">Natan</h3>
                         <p class="testimonial-comment">"Ni Sibantu Gacor Parah Bagus Banget coy bisa bantu bisa bikin krepes😍😍😍😍"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491517728755713/WhatsApp_Image_2025-01-05_at_22.49.23_a706d67b.jpg?ex=677bfbac&is=677aaa2c&hm=e5521bbfd9a5f64cbe7a95b8de12c2306c34a1c2da70c62e371975fa094b16f3&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491517728755713/WhatsApp_Image_2025-01-05_at_22.49.23_a706d67b.jpg?ex=683d1f6c&is=683bcdec&hm=2e1de645605a9392e67fce214150a26acbb4d6f7e5050b4c9f5a8b74abfaf69b&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Medek C6</h3>
+                        <h3 class="testimonial-name">Medek</h3>
                         <p class="testimonial-comment">"SiBantu benar-benar mengubah hidup saya! Dengan bantuan mereka, saya bisa menyelesaikan proyek dengan cepat dan efisien. Layanan yang sangat direkomendasikan! 🌟"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325492660890243192/WhatsApp_Image_2025-01-05_at_22.50.15_4eb75ed3.jpg?ex=677bfcbc&is=677aab3c&hm=a0c2a2b94fd06a1ee5ea30516832e2dbf7fad8f721d86c00a558d3070e205bb2&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325492660890243192/WhatsApp_Image_2025-01-05_at_22.50.15_4eb75ed3.jpg?ex=683d207c&is=683bcefc&hm=6c01814238b0e14deeca2478564b34655051488cd17d2ec0505a8c34565e7418&" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
-                        <h3 class="testimonial-name">Bin lapangan tembak</h3>
-                        <p class="testimonial-comment">"Saya mau tidur"</p>
+                        <h3 class="testimonial-name">Bintoro</h3>
+                        <p class="testimonial-comment">"Bagus"</p>
                     </div>
                 </article>
             </div>

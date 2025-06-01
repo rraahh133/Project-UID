@@ -42,16 +42,8 @@ $email_from_users = $user['user_email'] ?? null;
 <body class="bg-gray-100 font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="./../index.php">SiBantu</a>
-            </h1>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-bell text-white text-lg"></i>
-                <i class="fas fa-envelope text-white text-lg"></i>
-                <img src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-10 h-10 border-2 border-white" />
-            </div>
-        </header>
+        <?php require '../header.php'; ?>
+
 
         <!-- Main Content -->
         <main class="flex-1 p-6">
@@ -67,15 +59,15 @@ $email_from_users = $user['user_email'] ?? null;
                     <!-- Profile Picture Field -->
                     <div class="flex flex-col items-center mb-8">
                         <div class="w-48 h-48 overflow-hidden rounded-full border-4 border-gray-300 shadow-lg mb-4">
-                            <img id="crop_preview" src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" alt="Preview" class="object-cover w-full h-full">
+                            <img id="crop_preview" src="<?= $user['info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" alt="Preview" class="object-cover w-full h-full">
                         </div>
                         <div class="flex flex-col items-center gap-2">
-                            <label class="block text-lg font-medium text-gray-700" for="profile_picture_input">
+                            <label class="block text-lg font-medium text-gray-700" for="info_profile_picture_input">
                                 <span class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all cursor-pointer">
                                     <i class="fas fa-camera mr-2"></i>Ubah Foto Profil
                                 </span>
                             </label>
-                            <input type="file" id="profile_picture_input" accept="image/*" onchange="openCropperModal(event)" class="hidden">
+                            <input type="file" id="info_profile_picture_input" accept="image/*" onchange="openCropperModal(event)" class="hidden">
                             <p class="text-sm text-gray-500">Format yang didukung: JPG, PNG, GIF (Max. 2MB)</p>
                         </div>
                         <input type="hidden" name="cropped_image" id="cropped_image">
@@ -84,21 +76,21 @@ $email_from_users = $user['user_email'] ?? null;
                     <!-- Name Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="name">Nama</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['name'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="name" name="name" placeholder="Masukkan nama Anda" type="text" value="<?= htmlspecialchars($user['info_name'] ?? ''); ?>" />
                     </div>
 
                     <!-- Birthdate Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="birthdate">Tanggal Lahir</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['birthdate'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="birthdate" name="birthdate" type="date" value="<?= htmlspecialchars($user['info_birthdate'] ?? ''); ?>" />
                     </div>
 
                     <!-- Gender Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="gender">Jenis Kelamin</label>
                         <select class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="gender" name="gender">
-                            <option value="male" <?= ($user['gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Laki-laki</option>
-                            <option value="female" <?= ($user['gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Perempuan</option>
+                            <option value="male" <?= ($user['info_gender'] ?? '') === 'male' ? 'selected' : ''; ?>>Laki-laki</option>
+                            <option value="female" <?= ($user['info_gender'] ?? '') === 'female' ? 'selected' : ''; ?>>Perempuan</option>
                         </select>
                     </div>
 
@@ -113,7 +105,7 @@ $email_from_users = $user['user_email'] ?? null;
                     <!-- Phone Field -->
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="phone">Nomor Telepon</label>
-                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['phone'] ?? ''); ?>" />
+                        <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="phone" name="phone" placeholder="Masukkan nomor telepon Anda" type="text" value="<?= htmlspecialchars($user['info_phone'] ?? ''); ?>" />
                     </div>
 
                     <!-- Modal for Cropping & Live Preview -->
@@ -125,7 +117,7 @@ $email_from_users = $user['user_email'] ?? null;
                             <h3 class="text-lg font-semibold mb-6">Preview</h3>
                                 <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-300 mb-6">
                                     <img id="crop_preview_modal" 
-                                    src="<?= $user['profile_picture'] ? 'data:image/jpeg;base64,' . $user['profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
+                                    src="<?= $user['info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" 
                                     alt="Crop Preview" 
                                     class="object-cover w-full h-full" 
                                     />
@@ -269,19 +261,22 @@ $email_from_users = $user['user_email'] ?? null;
         fetch('../database/user-save_biodata.php', {
             method: 'POST',
             body: formData
-        }).then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('notification').classList.remove('hidden');
-                setTimeout(() => {
-                    document.getElementById('notification').classList.add('hidden');
-                }, 3000);
-            } else {
-                alert('Gagal menyimpan: ' + (data.message || 'Unknown error.'));
+        })
+        .then(async response => {
+            try {
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('notification').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('notification').classList.add('hidden');
+                    }, 3000);
+                } else {
+                }
+            } catch (e) {
+                alert('Gagal menyimpan: ' + "Foto terlalu Besar, maksimal 2MB. Pastikan formatnya JPG, PNG, atau GIF.");
             }
-        }).catch(error => {
-            console.error('Error:', error);
-        });
+        })
+        
         closeConfirmationModal();
     }
     </script>
