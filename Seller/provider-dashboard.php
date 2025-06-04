@@ -27,11 +27,9 @@ if (!$user) {
         <!-- Header -->
         <?php require '../header.php'; ?>
 
-
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
             <?php require './sidebar.php'; ?>
-
 
             <!-- Main Content -->
             <main class="flex-1 p-6">

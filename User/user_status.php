@@ -147,7 +147,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                         </tr>
                         <tr>
                             <td class="py-3 px-4" colspan="2">
-                                <img alt="Image of Membersihkan Rumah" class="w-3/4 h-auto rounded-lg mx-auto shadow-md" id="service-image" />
+                                <img alt="Seller proof image not available" class="w-3/4 h-auto rounded-lg mx-auto shadow-md" id="service-image" />
                             </td>
                         </tr>
                     </tbody>
@@ -176,7 +176,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                         'paymentmethod' => htmlspecialchars($order['payment_method'] ?? 'BANK'),
                         'recipientName' => htmlspecialchars($order['recipient_name'] ?? ''),
                         'note' => htmlspecialchars($order['note'] ?? ''),
-                        'image' => htmlspecialchars($order['service']['service_image'] ?? 'https://storage.googleapis.com/a1aa/image/rdmu026VRJKOEZ0OAB3FfkROMOtdqqVGWGXjal8VO2YNmJBKA.jpg')
+                        'image' => htmlspecialchars($order['seller_proof'])
                     ];
                 }
                 echo "const ordersData = " . json_encode($orders_js) . ";";
@@ -194,7 +194,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             document.getElementById('transaction-amount').innerText = transaction.amount;
             document.getElementById('payment-method').innerText = transaction.paymentmethod;
             document.getElementById('service-image').src = transaction.image;
-            document.getElementById('service-image').alt = `Image of ${transaction.serviceType}`;
             if (transaction.note) {
                 document.getElementById('note-row').classList.remove('hidden');
                 document.getElementById('transaction-note').innerText = transaction.note;
@@ -202,6 +201,9 @@ while ($row = mysqli_fetch_assoc($result)) {
                 document.getElementById('note-row').classList.add('hidden');
             }
         }
+
+
+
 
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');

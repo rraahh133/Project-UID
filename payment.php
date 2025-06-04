@@ -61,7 +61,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                             </div>
                             <div>
                                 <p class="text-gray-600">Hubungi Penjual</p>
-                                <a href="https://wa.me/<?= htmlspecialchars($service['provider_number']) ?>?text=Halo,%20saya%20ingin%20menanyakan%20stok%20untuk%20layanan%20<?= urlencode($service['service_name']) ?>" 
+                                <a href="https://wa.me/<?= htmlspecialchars($service['provider_number'])?>?text=Halo,%20saya%20ingin%20menanyakan%20stok%20untuk%20layanan%20<?=urlencode($service['service_name'])?>" 
                                     target="_blank"
                                     class="inline-flex items-center justify-center w-10 h-10 mt-4 bg-white text-blue-600 rounded-lg shadow border border-blue-600 hover:bg-blue-50 transition">
                                         <i class="fab fa-whatsapp text-xl"></i>

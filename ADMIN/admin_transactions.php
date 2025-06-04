@@ -163,16 +163,18 @@ if (isset($_GET['cancel'])) {
         'verified proof' => 'verified proof',
         'Work On Progress' => 'Work On Progress',
         'completed' => 'Selesai',
-        'declined' => 'Ditolak'
+        'declined' => 'Ditolak',
+        'komplain' => 'Bermasalah'
     ];
 
     $colorMap = [
         'all' => 'secondary',
-        'pending' => 'warning',
-        'verified' => 'info',
-        'ongoing' => 'primary',
+        'pending proof' => 'warning',
+        'verified proof' => 'info',
+        'Work On Progress' => 'primary',
         'completed' => 'success',
-        'rejected' => 'danger'
+        'declined' => 'danger',
+        'komplain' => 'danger'
     ];
     ?>
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -196,6 +198,7 @@ if (isset($_GET['cancel'])) {
                     'verified proof' => 'bg-green-50 border-green-300',
                     'completed' => 'bg-green-50 border-green-300',
                     'declined' => 'bg-red-50 border-red-300',
+                    'komplain' => 'bg-red-50 border-red-300',
                     default => 'bg-gray-50 border-gray-200'
                 };
 
@@ -205,6 +208,7 @@ if (isset($_GET['cancel'])) {
                     'verified proof' => 'bg-green-100 text-green-800',
                     'completed' => 'bg-green-100 text-green-800',
                     'declined' => 'bg-red-100 text-red-800',
+                    'komplain' => 'bg-red-100 text-red-800',
                     default => 'bg-gray-100 text-gray-800'
                 };
 
@@ -249,6 +253,8 @@ if (isset($_GET['cancel'])) {
                         <i class="fas fa-times"></i> Batalkan
                     </a>
                 </div>
+
+                
                 <?php endif; ?>
             </div>
             <?php endforeach; ?>

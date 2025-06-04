@@ -157,13 +157,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
         $order_id = $_POST['order_id'] ?? '';
+        $image_base64 = $_POST['image_base64'] ?? '';
         if (!$order_id) {
             echo json_encode(['success' => false, 'message' => 'ID pesanan tidak valid']);
             exit;
         }
 
-        $stmt = $conn->prepare("UPDATE orders SET status = 'completed' WHERE id = ?");
-        $stmt->bind_param("i", $order_id);
+        $stmt = $conn->prepare("UPDATE orders SET status = 'completed', seller_proof = ? WHERE id = ?");
+        $stmt->bind_param("si", $image_base64, $order_id);
         $stmt->execute();
         echo json_encode(['success' => true, 'message' => 'Pesanan Diselesaikan oleh penjual.']);
 

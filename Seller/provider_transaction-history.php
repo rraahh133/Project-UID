@@ -46,11 +46,10 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 $totalPendapatan = 0;
 foreach ($orders as $order) {
-    if ($order['status'] !== 'declined') {
+    if ($order['status'] !== 'declined' && $order['status'] !== 'pending proof' && $order['status'] !== 'Work On Progress') {
         $totalPendapatan += $order['service']['service_price'];
     }
 }
-
 ?>
 
 
@@ -70,7 +69,6 @@ foreach ($orders as $order) {
     <div class="flex flex-col min-h-screen">
         <!-- Header -->
         <?php require '../header.php'; ?>
-
 
         <div class="flex flex-1 flex-col md:flex-row">
             <!-- Sidebar -->
@@ -113,11 +111,6 @@ foreach ($orders as $order) {
                                                 Transaksi
                                             </button>
                                         </li>
-                                        <li class="mr-2" role="presentation">
-                                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="pending-tab" data-tab="pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
-                                                Menunggu Pembayaran
-                                            </button>
-                                        </li>
                                     </ul>
                                 </div>
 
@@ -137,6 +130,8 @@ foreach ($orders as $order) {
                                                         <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Lunas</span>
                                                     <?php elseif ($order['status'] === 'Work On Progress'): ?>
                                                         <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Sedang di proses</span>
+                                                    <?php elseif ($order['status'] === 'pending proof'): ?>
+                                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Pembayaran Di Verifikasi</span>
                                                     <?php elseif ($order['status'] === 'verified proof'): ?>
                                                         <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Tindakan Seller</span>
                                                     <?php elseif ($order['status'] === 'declined'): ?>
@@ -181,18 +176,28 @@ foreach ($orders as $order) {
                                                                 <form method="POST" >
                                                                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                                                     <input type="hidden" name="action" value="take">
-                                                                    <button 
+                                                                    <button
                                                                         type="button"
-                                                                        class="flex items-center px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600" 
-                                                                        onclick="JobDone(<?= $order['id'] ?>)">
-                                                                        Job Done
+                                                                        class="flex items-center px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                                                                        onclick="openModal(
+                                                                        <?= $order['id'] ?>, 
+                                                                        '<?= $order['customer']['info_name'] ?>', 
+                                                                        '<?= $order['customer']['info_email'] ?>',
+                                                                        '<?= $order['customer']['info_phone'] ?>',
+                                                                        '<?= $order['id'] ?>',
+                                                                        '<?= $order['service']['service_name'] ?>',
+                                                                        '<?= $order['service']['service_price'] ?>',
+                                                                        '<?= $order['service']['status'] ?>')">
+                                                                        Details
                                                                     </button>
                                                                 </form>
 
                                                                 <!-- WhatsApp Button (wrapped in a form, but just acts as a link) -->
-                                                                <form action="https://wa.me/<?= htmlspecialchars($order['customer']['info_phone']) ?>?text=Halo,%20saya%20ingin%20menghubungi%20Anda%20terkait%20order%20<?= urlencode($order['id']) ?>"
+                                                               <form action="https://wa.me/<?= htmlspecialchars($order['customer']['info_phone']) ?>"
                                                                     method="GET" target="_blank" class="inline">
-                                                                    <button type="submit" class="flex items-center px-3 py-1 bg-white text-green-600 text-sm rounded border border-green-600 hover:bg-green-50 transition">
+                                                                    <input type="hidden" name="text" value="<?= htmlspecialchars('Halo, saya ingin menghubungi Anda terkait order ' . $order['id']) ?>">
+                                                                    <button type="submit"
+                                                                            class="flex items-center px-3 py-1 bg-white text-green-600 text-sm rounded border border-green-600 hover:bg-green-50 transition">
                                                                         <i class="fab fa-whatsapp mr-2 text-green-600 text-base leading-none"></i>
                                                                         WhatsApp
                                                                     </button>
@@ -203,62 +208,13 @@ foreach ($orders as $order) {
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
-
-                                    <!-- Pending Tab -->
-                                    <div id="Transaksi" class="tab-pane hidden">
-                                        <div class="space-y-4">
-                                            <!-- Pending Transaction 1 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Perbaikan Listrik</h4>
-                                                        <p class="text-sm text-gray-600">Rudi Hartono</p>
-                                                    </div>
-                                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Pembayaran</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">16 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 65.000</p>
-                                                </div>
-                                            </div>
-
-                                            <!-- Pending Transaction 2 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Pembersihan Kantor</h4>
-                                                        <p class="text-sm text-gray-600">Siti Aminah</p>
-                                                    </div>
-                                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Pembayaran</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">16 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 100.000</p>
-                                                </div>
-                                            </div>
-
-                                            <!-- Pending Transaction 3 -->
-                                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-gray-800">Perbaikan Pipa</h4>
-                                                        <p class="text-sm text-gray-600">Ahmad Fadillah</p>
-                                                    </div>
-                                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Pembayaran</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <p class="text-gray-600">15 Maret 2024</p>
-                                                    <p class="font-semibold text-gray-800">Rp 85.000</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Confirmation Modal Cancel -->
                 <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden" id="confirmationCancelModal">
                     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
                         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Konfirmasi</h2>
@@ -270,14 +226,97 @@ foreach ($orders as $order) {
                     </div>
                 </div>
 
+                <!-- Modal Detail Customer -->
+                <div id="modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden justify-center items-center z-50">
+                    <div class="bg-white rounded-xl p-6 w-96 shadow-xl relative">
+                        <h2 class="text-xl font-bold text-blue-700 mb-4">Detail Pelanggan</h2>
+
+                        <!-- Customer Details -->
+                        <div id="customer-details" class="mb-4 space-y-2">
+                            <p><strong>Nama:</strong> <span id="customer-name" class="text-gray-800"></span></p>
+                            <p><strong>Email:</strong> <span id="customer-email" class="text-gray-800"></span></p>
+                            <p><strong>Nomor HP:</strong> <span id="customer-phone" class="text-gray-800"></span></p>
+                            <p><strong>Order ID:</strong> <span id="order-id" class="text-gray-800"></span></p>
+                            <p><strong>Service:</strong> <span id="service-name" class="text-gray-800"></span></p>
+                            <p><strong>Harga:</strong> <span id="service-price" class="text-gray-800"></span></p>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <form method="POST" id="jobDoneForm" class="space-y-4">
+                            <input type="hidden" name="order_id" id="order_id">
+                            <input type="hidden" name="action" value="take">
+                            <input type="hidden" name="image_base64" id="image_base64">
+
+                            <div>
+                                <label for="modal_upload" class="block text-sm font-medium text-gray-700 mb-1">Upload Gambar:</label>
+                                <input
+                                    type="file"
+                                    id="modal_upload"
+                                    name="payment_proof"
+                                    accept=".png, .jpg, .jpeg"
+                                    required
+                                    onchange="convertImageToBase64(this)"
+                                    class="block w-full text-gray-700 border border-gray-300 rounded-lg cursor-pointer
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100"
+                                />
+                                <p id="file-name" class="text-sm text-gray-500 italic mt-1"></p>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 pt-3">
+                                <button
+                                    type="button"
+                                    onclick="closeModal()"
+                                    class="bg-gray-300 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-400 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Selesai
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+
             </main>
         </div>
-
         <!-- Footer -->
         <?php require '../User/footer.php'; ?>
     </div>
 
     <script>
+        function openModal(orderId, customerName, customerEmail, customerPhone, orderIdText, serviceName, servicePrice, orderStatus) {
+            document.getElementById('order_id').value = orderId;
+
+            document.getElementById('customer-name').textContent = customerName || 'N/A';
+            document.getElementById('customer-email').textContent = customerEmail || 'N/A';
+            document.getElementById('customer-phone').textContent = customerPhone || 'N/A';
+            // orderIdText is passed separately, but you can just use orderId if they're the same
+            document.getElementById('order-id').textContent = orderIdText || orderId || 'N/A';
+            document.getElementById('service-name').textContent = serviceName || 'N/A';
+            document.getElementById('service-price').textContent = servicePrice ? `Rp ${servicePrice}` : 'Rp 0';
+
+            const modal = document.getElementById('modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+            document.getElementById('image_base64').value = '';
+        }
+            
         function toggleDropdown(id) {
             var dropdown = document.getElementById(id);
             if (dropdown.classList.contains('hidden')) {
@@ -386,11 +425,39 @@ foreach ($orders as $order) {
             });
         }
 
+        function convertImageToBase64(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                document.getElementById('image_base64').value = base64String;
+                document.getElementById('file-name').textContent = file.name;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+
+
+        document.getElementById('jobDoneForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const orderId = document.getElementById('order_id').value;
+            JobDone(orderId);
+        });
+
 
         function JobDone(orderId) {
             const formData = new FormData();
             formData.append('order_id', orderId);
             formData.append('action', 'JobDone');
+
+            // Get the base64 image value from hidden input
+            const base64Image = document.getElementById('image_base64').value;
+            formData.append('image_base64', base64Image);
 
             fetch('../database/payment.php', {
                 method: 'POST',
@@ -398,13 +465,12 @@ foreach ($orders as $order) {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data.success);
                 if (data.success) {
-                    showNotification(data.message || 'Pesanan berhasil Diselesaikan.', true);
-                    setTimeout(() => { location.reload(); }, 500);
+                showNotification(data.message || 'Pesanan berhasil Diselesaikan.', true);
+                setTimeout(() => { location.reload(); }, 500);
                 } else {
-                    showNotification(data.message || 'Pesanan Gagal Diselesaikan.', false);
-                    alert(data.message || 'Pesanan Gagal Diselesaikan.');
+                showNotification(data.message || 'Pesanan Gagal Diselesaikan.', false);
+                alert(data.message || 'Pesanan Gagal Diselesaikan.');
                 }
             })
             .catch(error => {
@@ -412,7 +478,9 @@ foreach ($orders as $order) {
                 alert('Pesanan Gagal Diselesaikan.');
                 console.error('Error:', error);
             });
-        }
+            }
+
+
 
 
         function showNotification(message, isSuccess) {

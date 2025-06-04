@@ -141,9 +141,9 @@
                      body: formData
                   });
 
-                  const result = await response.json();
-                  console.log(result)
-                  showToast(result.message);
+                     const result = await response.json();
+                     console.log(result)
+                     showToast(result.message);
                } catch (error) { 
                   console.error('Error:', error);
                   showToast('Network error. Please try again later.', 'error');
@@ -167,8 +167,8 @@
                   showToast(result.message, 'success');
 
                   setTimeout(() => {
-                        window.location.href = result.redirect; // redirect after toast shown
-                  }, 1500); // 1.5 second delay so user can read the toast
+                        window.location.href = result.redirect
+                  }, 1500);
                } else {
                   showToast(result.message, 'error');
                }

@@ -22,11 +22,6 @@
             </a>
         </li>
         <li class="nav-item mb-2">
-            <a href="admin_reports.php" class="nav-link">
-                <i class="fas fa-chart-bar me-2"></i> Laporan
-            </a>
-        </li>
-        <li class="nav-item mb-2">
             <a href="../logout.php" class="nav-link text-danger">
                 <i class="fas fa-sign-out-alt me-2"></i> Logout
             </a>
