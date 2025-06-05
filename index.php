@@ -182,42 +182,42 @@ if (($user['usertype'] ?? '') === 'seller') {
             <h2 class="testimonial-heading">Testimonial</h2>
             <div class="testimonial-grid">
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489716988084235/image.png?ex=683d1dbe&is=683bcc3e&hm=15df4b321a3b6ea20386ba7c7a7a9ef13506ee68b9a6b2d6fc08be1ff43ce5a0&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/9c/0f/41/9c0f41323c592eaaf1d46747c035dcc0.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Reja</h3>
                         <p class="testimonial-comment">"SiBantu benar-benar membantu saya dalam banyak hal. Aplikasinya simpel dan mudah digunakan, jadi saya bisa lebih fokus ke pekerjaan saya tanpa banyak gangguan."</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489810927779951/image.png?ex=683d1dd5&is=683bcc55&hm=c92fe01f629327c6725d5dbf8787ac3f7f2707594162dbb2ee0710405c4ba5d2&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/08/e2/2c/08e22ce6abe295ffa619c817f16fe443.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Rutz</h3>
                         <p class="testimonial-comment">"Gak nyangka banget ada aplikasi yang sepraktis ini. Saya jadi bisa lebih gampang atur waktu dan pekerjaan. Benar-benar ngebantu banget!"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325489968507916369/image.png?ex=683d1dfa&is=683bcc7a&hm=4da9bed855e44af70d46c6aa7ac29b4b0192bb71b27aa605226bf98d7437e9d9&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/df/9d/55/df9d552a9d6357b763ea133b3465cedd.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Yoyo</h3>
                         <p class="testimonial-comment">"Aplikasi ini bener-bener membantu banget, jadi gak perlu ribet lagi. Semua jadi lebih cepat dan praktis. Saya suka banget!"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491190853799956/image.png?ex=683d1f1e&is=683bcd9e&hm=647ad613464b2f84ef5c2eb4302819013227dd58732109d7997931416e17e58f&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/4c/d1/8b/4cd18b54681fed22abc834ad51d25233.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Natan</h3>
                         <p class="testimonial-comment">"Ni Sibantu Gacor Parah Bagus Banget coy bisa bantu bisa bikin krepes😍😍😍😍"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325491517728755713/WhatsApp_Image_2025-01-05_at_22.49.23_a706d67b.jpg?ex=683d1f6c&is=683bcdec&hm=2e1de645605a9392e67fce214150a26acbb4d6f7e5050b4c9f5a8b74abfaf69b&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/6d/2d/a7/6d2da76407bce0de6f6851a5c526e9e7.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Medek</h3>
                         <p class="testimonial-comment">"SiBantu benar-benar mengubah hidup saya! Dengan bantuan mereka, saya bisa menyelesaikan proyek dengan cepat dan efisien. Layanan yang sangat direkomendasikan! 🌟"</p>
                     </div>
                 </article>
                 <article class="testimonial-card">
-                    <img loading="lazy" src="https://cdn.discordapp.com/attachments/1005856896751767573/1325492660890243192/WhatsApp_Image_2025-01-05_at_22.50.15_4eb75ed3.jpg?ex=683d207c&is=683bcefc&hm=6c01814238b0e14deeca2478564b34655051488cd17d2ec0505a8c34565e7418&" class="testimonial-avatar" alt="User avatar" />
+                    <img loading="lazy" src="https://i.pinimg.com/736x/5f/63/af/5f63af6125a8d39e6b049424b7d52dda.jpg" class="testimonial-avatar" alt="User avatar" />
                     <div class="testimonial-text">
                         <h3 class="testimonial-name">Bintoro</h3>
                         <p class="testimonial-comment">"Bagus"</p>
@@ -253,8 +253,8 @@ if (($user['usertype'] ?? '') === 'seller') {
                 <div>
                     <h3 class="text-lg font-semibold">Contact Us</h3>
                     <nav class="mt-4 space-y-2">
-                        <a href="mailto:support@sibantu.com" class="block hover:underline">support@sibantu.com</a>
-                        <a href="tel:+6281234567890" class="block hover:underline">+62 812 3456 7890</a>
+                        <a href="mailto:sibantu@sigmaku.biz.id" class="block hover:underline">sibantu@sigmaku.biz.id</a>
+                        <a href="tel:+6281234567890" class="block hover:underline">+62 857-0628-0154</a>
                     </nav>
                 </div>
             </div>

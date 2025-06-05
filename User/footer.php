@@ -22,8 +22,8 @@
       <div>
         <h3 class="text-lg font-semibold">Contact Us</h3>
         <nav class="mt-4 space-y-2">
-          <a class="block hover:underline" href="mailto:support@sibantu.com">support@sibantu.com</a>
-          <a class="block hover:underline" href="tel:+6281234567890">+62 812 3456 7890</a>
+          <a class="block hover:underline" href="mailto:sibantu@sigmaku.biz.id">sibantu@sigmaku.biz.id</a>
+          <a class="block hover:underline" href="tel:+6281234567890">+62 857-0628-0154</a>
         </nav>
       </div>
       

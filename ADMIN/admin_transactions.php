@@ -2,8 +2,6 @@
 session_start();
 include('../database/service_functions.php');
 
-
-
 $status_filter = $_GET['status'] ?? 'all';
 
 $valid_statuses = ['all', 'pending proof', 'verified proof', 'Work On Progress', 'completed', 'declined'];

@@ -165,8 +165,8 @@ if (($user['usertype'] ?? '') === 'seller') {
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Kontak</h4>
-                    <p class="text-gray-400">Email: support@sibantu.com</p>
-                    <p class="text-gray-400">Telp: +62 812 3456 7890</p>
+                    <p class="text-gray-400">Email: sibantu@sigmaku.biz.id</p>
+                    <p class="text-gray-400">Telp: +62 857-0628-0154</p>
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Ikuti Kami</h4>

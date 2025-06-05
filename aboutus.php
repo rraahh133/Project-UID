@@ -97,8 +97,8 @@
             <div>
                 <h3 class="text-lg font-semibold">Hubungi Kami</h3>
                 <nav class="mt-4 space-y-2">
-                    <a href="mailto:support@sibantu.com" class="block hover:underline">support@sibantu.com</a>
-                    <a href="tel:+6281234567890" class="block hover:underline">+62 812 3456 7890</a>
+                    <a href="mailto:sibantu@sigmaku.biz.id" class="block hover:underline">sibantu@sigmaku.biz.id</a>
+                    <a href="tel:+6281234567890" class="block hover:underline">+62 857-0628-0154</a>
                 </nav>
             </div>
         </div>
