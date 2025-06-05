@@ -2,7 +2,7 @@
     <div class="flex items-center gap-3 mb-6">
         <img src="<?= $user['info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="rounded-full w-12 h-12">
         <div>
-            <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
+            <h2 class="text-lg font-semibold"><?= htmlspecialchars($user['info_name'] ?? 'User') ?></h2>
             <p class="text-gray-500 text-sm">Member</p>
         </div>
     </div>

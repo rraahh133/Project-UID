@@ -33,7 +33,6 @@ $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
-
 $orders = [];
 
 while ($row = mysqli_fetch_assoc($result)) {
@@ -43,16 +42,13 @@ while ($row = mysqli_fetch_assoc($result)) {
     $row['service'] = $service;
     $orders[] = $row;
 }
-
 $totalPendapatan = 0;
 foreach ($orders as $order) {
-    if ($order['status'] !== 'declined' && $order['status'] !== 'pending proof' && $order['status'] !== 'Work On Progress') {
+    if ($order['status'] !== 'declined' && $order['status'] !== 'pending proof' && $order['status'] !== 'Work On Progress' && $order['status'] !== 'komplain') {
         $totalPendapatan += $order['service']['service_price'];
     }
 }
-?>
-
-
+?>  
 
 <html lang="en">
 
@@ -136,6 +132,8 @@ foreach ($orders as $order) {
                                                         <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Menunggu Tindakan Seller</span>
                                                     <?php elseif ($order['status'] === 'declined'): ?>
                                                         <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Pesanan Ditolak</span>
+                                                    <?php elseif ($order['status'] === 'komplain'): ?>
+                                                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Pesanan Dikomplain</span>
                                                     <?php endif; ?>
                                                     
                                                 </div>
@@ -170,7 +168,7 @@ foreach ($orders as $order) {
                                                             </button>
                                                         </form>
 
-                                                        <?php elseif ($order['status'] === 'Work On Progress'): ?>
+                                                        <?php elseif ($order['status'] === 'Work On Progress' ): ?>
                                                             <div class="flex items-center space-x-2 mt-2">
                                                                 <!-- Job Done Button -->
                                                                 <form method="POST" >
@@ -203,6 +201,20 @@ foreach ($orders as $order) {
                                                                     </button>
                                                                 </form>
                                                             </div>
+
+                                                        <?php elseif ($order['status'] === 'komplain' ): ?>
+                                                                <!-- WhatsApp Button -->
+                                                                <form action="https://wa.me/<?= htmlspecialchars($order['customer']['info_phone']) ?>"
+                                                                    method="GET" target="_blank" class="inline">
+                                                                    <input type="hidden" name="text" value="<?= htmlspecialchars('Halo, saya ingin mendiskusikan lebih lanjut mengenai komplain pada pesanan #' . $order['id'] . ' untuk layanan ' . $order['service']['service_name'] . '.') ?>">
+                                                                    <button type="submit"
+                                                                            class="flex items-center px-3 py-1 bg-white text-green-600 text-sm rounded border border-green-600 hover:bg-green-50 transition">
+                                                                        <i class="fab fa-whatsapp mr-2 text-green-600 text-base leading-none"></i>
+                                                                        Chat User
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                            
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -440,8 +452,6 @@ foreach ($orders as $order) {
             }
         }
 
-
-
         document.getElementById('jobDoneForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -478,22 +488,19 @@ foreach ($orders as $order) {
                 alert('Pesanan Gagal Diselesaikan.');
                 console.error('Error:', error);
             });
-            }
-
-
-
+        }
 
         function showNotification(message, isSuccess) {
-        const notification = document.createElement('div');
-        notification.textContent = message;
-        notification.className = `fixed top-4 right-4 text-white py-3 px-6 rounded-lg shadow-lg ${
-            isSuccess ? 'bg-green-600' : 'bg-red-600'
-        }`;
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.className = `fixed top-4 right-4 text-white py-3 px-6 rounded-lg shadow-lg ${
+                isSuccess ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
     </script>
 </body>

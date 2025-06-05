@@ -1,8 +1,6 @@
 <?php
 include('../database/service_functions.php'); // where getUserData() is defined
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth.php");
     exit;
@@ -95,8 +93,6 @@ $email_from_users = $user['user_email'] ?? null;
                     </div>
 
                     <!-- Email Field -->
-
-                    
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2" for="email">Email (Perhatian: Mengubah email di sini akan mengganti alamat email yang terdaftar)</label>
                         <input class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500" id="email" name="email" placeholder="Masukkan email Anda" type="email" value="<?= htmlspecialchars($email_from_users ?? '-') ?>" />
@@ -177,14 +173,6 @@ $email_from_users = $user['user_email'] ?? null;
         document.getElementById('confirmationModal').classList.add('hidden');
     }
 
-    function showError(message) {
-        const errorEl = document.getElementById('errorNotification');
-        errorEl.textContent = message;
-        errorEl.classList.remove('hidden');
-        setTimeout(() => {
-            errorEl.classList.add('hidden');
-        }, 3000);
-    }
     let cropper;
     let imageFile;
 

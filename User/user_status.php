@@ -18,11 +18,17 @@ mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $orders = [];
+$orders = array_filter($orders, function($order) {
+    return strtolower($order['status']) !== 'completed';
+});
 
 while ($row = mysqli_fetch_assoc($result)) {
     $service = fetchServiceBySeller($conn, $row['service_id'], $row['seller_id']);
     $row['service'] = $service;
-    $orders[] = $row;
+
+    if (strtolower($row['status']) !== 'completed') {
+        $orders[] = $row;
+    }
 }
 ?>
 <html lang="en">
@@ -72,7 +78,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                                         <tr class="hover:bg-gray-50">
                                             <td class="py-3 px-4 text-sm text-gray-700"><?= $index + 1 ?></td>
                                             <td class="py-3 px-4 text-sm text-gray-700">
-                                                <?= 'TRX' . htmlspecialchars($order['id']) . '0' . htmlspecialchars($order['customer_id']) ?>
+                                                <?= 'TRX' . htmlspecialchars($order['id']) ?>
                                             </td>
 
                                             <td class="py-3 px-4 text-sm text-gray-700"><?= date("d F Y", strtotime($order['created_at'])) ?></td>
@@ -80,7 +86,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                                                 $badgeColor = match (strtolower($order['status'])) {
                                                     'pending proof', 'Work On Progress' => 'text-yellow-800',
                                                     'completed', 'verified proof', 'lunas' => 'text-green-800',
-                                                    'declined' => 'text-red-800',
+                                                    'declined', 'komplain' => 'text-red-800',
                                                     default => 'text-gray-800'
                                                 };
                                             ?>  
@@ -112,38 +118,45 @@ while ($row = mysqli_fetch_assoc($result)) {
 
     <!-- Modal -->
     <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden" id="modal">
-        <div class="bg-white p-8 rounded-xl shadow-md w-11/12 md:w-1/3">
-            <h2 class="text-2xl font-bold mb-6">Detail Pembayaran</h2>
-            <div id="transaction-details">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg relative animate-fade-in">
+            <!-- Close Button (Top Right) -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl transition-colors duration-200" aria-label="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 class="text-2xl font-bold mb-6 text-center text-blue-700">Detail Pembayaran</h2>
+            <div id="transaction-details" class="mb-4">
                 <table class="w-full text-left">
                     <tbody class="divide-y divide-gray-200">
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Nomor Transaksi:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="transaction-id"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600 w-1/3">Nomor Transaksi:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800 font-mono" id="transaction-id"></td>
                         </tr>
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Jenis Jasa:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="service-type"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Jenis Jasa:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800" id="service-type"></td>
                         </tr>
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Tanggal:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="transaction-date"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Tanggal:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800" id="transaction-date"></td>
                         </tr>
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Status:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="transaction-status"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Status:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800" id="transaction-status"></td>
                         </tr>
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Jumlah:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="transaction-amount"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Total Transaksi:</td>
+                            <td class="py-3 px-4 text-sm text-blue-700 font-semibold" id="transaction-amount"></td>
                         </tr>
                         <tr>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-700">Metode Pembayaran:</td>
-                            <td class="py-3 px-4 text-sm text-gray-700" id="payment-method"></td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Metode Pembayaran:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800" id="payment-method"></td>
                         </tr>
-                        <tr class="hidden" id="note-row">
-                            <td class="py-3 px-4 text-sm font-semibold text-red-500">Catatan:</td>
-                            <td class="py-3 px-4 text-sm text-red-500" id="transaction-note"></td>
+                        <tr id="note-row" class="hidden">
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-600">Catatan:</td>
+                            <td class="py-3 px-4 text-sm text-gray-800" id="transaction-note"></td>
                         </tr>
                         <tr>
                             <td class="py-3 px-4" colspan="2">
@@ -153,9 +166,12 @@ while ($row = mysqli_fetch_assoc($result)) {
                     </tbody>
                 </table>
             </div>
-            <div class="mt-6 text-center">
-                <button class="bg-gray-800 text-white px-6 py-3 rounded-full shadow hover:bg-gray-700 transition" onclick="closeModal()">
-                    Tutup
+            <div class="mt-6 flex gap-3 justify-end">
+                <button 
+                    class="bg-white text-green-600 border border-green-600 px-5 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors duration-200 shadow-sm flex items-center gap-2"
+                    id="komplain-btn"
+                    onclick="JobDone('<?= htmlspecialchars($order['id']) ?>')">
+                    <i class="fas fa-exclamation-circle"></i> Selesaikan Pesanan
                 </button>
             </div>
         </div>
@@ -194,6 +210,11 @@ while ($row = mysqli_fetch_assoc($result)) {
             document.getElementById('transaction-amount').innerText = transaction.amount;
             document.getElementById('payment-method').innerText = transaction.paymentmethod;
             document.getElementById('service-image').src = transaction.image;
+            if (transaction.status === 'komplain') {
+                document.getElementById('komplain-btn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('komplain-btn').style.display = 'none';
+            }
             if (transaction.note) {
                 document.getElementById('note-row').classList.remove('hidden');
                 document.getElementById('transaction-note').innerText = transaction.note;
@@ -202,8 +223,31 @@ while ($row = mysqli_fetch_assoc($result)) {
             }
         }
 
+        function JobDone(orderId) {
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('action', 'JobDone');
 
-
+            fetch('../database/payment.php', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message || 'Pesanan berhasil Diselesaikan.', true);
+                    setTimeout(() => { location.reload(); }, 500);
+                } else {
+                    showNotification(data.message || 'Pesanan gagal Diselesaikan.', false);
+                    alert(data.message || 'Pesanan gagal Diselesaikan.');
+                }
+            })
+            .catch(error => {
+                showNotification('Pesanan gagal Diselesaikan.', false);
+                alert('Pesanan gagal Diselesaikan.');
+                console.error('Error:', error);
+            });
+        }
 
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
@@ -216,6 +260,18 @@ while ($row = mysqli_fetch_assoc($result)) {
             } else {
                 dropdown.classList.add('hidden');
             }
+        }
+
+        function showNotification(message, isSuccess) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.className = `fixed top-4 right-4 text-white py-3 px-6 rounded-lg shadow-lg ${
+                isSuccess ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
         }
     </script>
 </body>

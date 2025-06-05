@@ -1,6 +1,10 @@
 <?php
 require './database/service_functions.php';
 $user = getUserData($conn);
+if (!$user) {
+    header("Location: ./auth.php");
+    exit;
+}
 $service_id = $_POST['service_id'] ?? null;
 $seller_user_id = $_POST['user_id'] ?? null;
 $seller = getUserData($conn, $seller_user_id);

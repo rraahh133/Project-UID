@@ -111,7 +111,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                                 <h3 class="text-lg font-semibold">Jasa Fotografi</h3>
                                 <p class="text-gray-600 text-sm">Prewed, pernikahan, DLL</p>
                                 <button onclick="setCategory('Fotografi')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    Pesan Sekarang
+                                    Lihat Kategori Ini
                                 </button>
                             </div>
                         </div>
@@ -122,7 +122,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                                 <h3 class="text-lg font-semibold">Jasa Graphic Design</h3>
                                 <p class="text-gray-600 text-sm">Membuat logo, poster, DLL</p>
                                 <button onclick="setCategory('Design')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    Pesan Sekarang
+                                    Lihat Kategori Ini
                                 </button>
                             </div>
                         </div>
@@ -133,7 +133,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                                 <h3 class="text-lg font-semibold">Jasa Pembuatan Website</h3>
                                 <p class="text-gray-600 text-sm">untuk bisnis atau portofolio pribadi</p>
                                 <button onclick="setCategory('Other')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    Pesan Sekarang
+                                    Lihat Kategori Ini
                                 </button>
                             </div>
                         </div>
@@ -144,7 +144,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                                 <h3 class="text-lg font-semibold">Jasa Kebersihan</h3>
                                 <p class="text-gray-600 text-sm">membersihkan rumah, kantor, DLL</p>
                                 <button onclick="setCategory('Kebersihan')" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    Pesan Sekarang
+                                    Lihat Kategori Ini
                                 </button>
                             </div>
                         </div>
@@ -157,7 +157,7 @@ if (($user['usertype'] ?? '') === 'seller') {
                                 <h3 class="text-lg font-semibold">Custom Request</h3>
                                 <p class="text-gray-600 text-sm">Jika tidak ada yang jasa yg perlukan</p>
                                 <a href="form.php" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white text-center rounded hover:bg-blue-600">
-                                    Pesan Sekarang
+                                    Lihat Kategori Ini
                                 </a>
                             </div>
                         </div>

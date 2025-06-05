@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'] ?? ''; // 'take' or 'cancel'
     $seller_id = $_SESSION['user_id'];
 
+    // === 1. Buyer Creates an Order ===
     if ($action === 'Buyer Creates an Order') {
         $seller_id = $_POST['seller_id'] ?? '';
         $service_id = $_POST['service_id'] ?? '';
@@ -47,75 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         } else {
             echo json_encode(['success' => false, 'message' => 'Gagal menyimpan data pesanan.']);
         }
-        
-        // === 2. ADMIN APPROVES OR REJECTS ===
-    } elseif ($action === 'Admin Approves or Rejects an Order') {
-        if ($_SESSION['usertype'] !== 'admin') {
-            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
-            exit;
-        }
-
-        $order_id = $_POST['order_id'] ?? '';
-        $status = $_POST['status'] ?? ''; // accepted or rejected
-
-        if (!$order_id || !in_array($status, ['verified proof', 'declined'])) {
-            echo json_encode(['success' => false, 'message' => 'Parameter tidak valid']);
-            exit;
-        }
-
-        $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $stmt->bind_param("si", $status, $order_id);
-        $stmt->execute();
-
-        echo json_encode(['success' => true, 'message' => 'Status pesanan diperbarui oleh admin.']);
-
-    // === 3. SELLER SUBMITS PROOF OF WORK ===
-    } elseif ($action === 'Seller Submits Proof of Work') {
-        if ($_SESSION['usertype'] !== 'seller') {
-            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
-            exit;
-        }
-
-        $order_id = $_POST['order_id'] ?? '';
-        $file = $_FILES['work_proof'];
-
-        if (!$order_id || !$file) {
-            echo json_encode(['success' => false, 'message' => 'ID pesanan dan file dibutuhkan.']);
-            exit;
-        }
-        $file_tmp = $file['tmp_name'];
-        $file_content = file_get_contents($file_tmp);
-        $file_base64 = base64_encode($file_content);
-
-        if (move_uploaded_file($file['tmp_name'], $target_file)) {
-            $stmt = $conn->prepare("UPDATE orders SET seller_proof = ?, status = 'proof_submitted' WHERE id = ?");
-            $stmt->bind_param("si", $file_base64, $order_id);
-            $stmt->execute();
-            echo json_encode(['success' => true, 'message' => 'Bukti kerja berhasil dikirim. Menunggu validasi admin.']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Gagal mengunggah bukti kerja.']);
-        }
-
-    // === 4. ADMIN MARKS AS COMPLETED ===  
-    } else if ($action === 'Admin Marks Order as Completed') {
-        if ($_SESSION['usertype'] !== 'admin') {
-            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
-            exit;
-        }
-
-        $order_id = $_POST['order_id'] ?? '';
-
-        if (!$order_id) {
-            echo json_encode(['success' => false, 'message' => 'ID pesanan tidak valid']);
-            exit;
-        }
-
-        $stmt = $conn->prepare("UPDATE orders SET status = 'completed' WHERE id = ?");
-        $stmt->bind_param("i", $order_id);
-        $stmt->execute();
-
-        echo json_encode(['success' => true, 'message' => 'Pesanan ditandai sebagai selesai.']);
-    // === 5. seller CANCELS ORDER ===
+    // === 2. Buyer Cancel Order ===
     } else if ($action === 'CancelJobSeller') {
         if ($_SESSION['usertype'] !== 'seller') {
             echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
@@ -134,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt->execute();
 
         echo json_encode(['success' => true, 'message' => 'Pesanan dibatalkan oleh penjual.']);
-    // === 6. seller take order ===
+    // === 3. Seller Accept Order ===
     } else if ($action === 'takeJobSeller') {
         if ($_SESSION['usertype'] !== 'seller') {
             echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
@@ -151,11 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt->execute();
         echo json_encode(['success' => true, 'message' => 'Pesanan diambil oleh penjual.']);
     
+    // === 4. Seller Mark Job as Done ===
     } else if ($action === 'JobDone') {
-        if ($_SESSION['usertype'] !== 'seller') {
-            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
-            exit;
-        }
         $order_id = $_POST['order_id'] ?? '';
         $image_base64 = $_POST['image_base64'] ?? '';
         if (!$order_id) {
@@ -163,10 +93,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         }
 
+        if ($image_base64 === '') {
+            // Check if seller_proof already exists in database
+            $stmt = $conn->prepare("SELECT seller_proof FROM orders WHERE id = ?");
+            $stmt->bind_param("i", $order_id);
+            $stmt->execute();
+            $stmt->bind_result($existing_proof);
+            $stmt->fetch();
+            $stmt->close();
+
+            if ($existing_proof) {
+            // Do not update seller_proof, only update status
+                $stmt = $conn->prepare("UPDATE orders SET status = 'completed' WHERE id = ?");
+                $stmt->bind_param("i", $order_id);
+                $stmt->execute();
+                echo json_encode(['success' => true, 'message' => 'Pesanan Diselesaikan oleh User.']);
+                exit;
+            }
+        }
+
+        // If image_base64 is provided, update both status and seller_proof
         $stmt = $conn->prepare("UPDATE orders SET status = 'completed', seller_proof = ? WHERE id = ?");
         $stmt->bind_param("si", $image_base64, $order_id);
         $stmt->execute();
         echo json_encode(['success' => true, 'message' => 'Pesanan Diselesaikan oleh penjual.']);
+    
+        // === 5. Buyer Complain Job ===
+    } else if ($action === 'JobKomplain') {
+        if ($_SESSION['usertype'] !== 'customer') {
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
+            exit;
+        }
+        $order_id = $_POST['order_id'] ?? '';
+        if (!$order_id) {
+            echo json_encode(['success' => false, 'message' => 'ID pesanan tidak valid']);
+            exit;
+        }
+
+        $stmt = $conn->prepare("UPDATE orders SET status = 'komplain' WHERE id = ?");
+        $stmt->bind_param("i", $order_id);
+        $stmt->execute();
+        echo json_encode(['success' => true, 'message' => 'Pesanan DiKomplain. Seller Akan menghubungi anda.']);
+    
+    } else if ($action === 'JobRating') {
+        if ($_SESSION['usertype'] !== 'customer') {
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
+            exit;
+        }
+        $order_id = $_POST['order_id'] ?? '';
+        $rating = $_POST['rating'] ?? '';
+        if (!$order_id) {
+            echo json_encode(['success' => false, 'message' => 'ID pesanan tidak valid']);
+            exit;
+        }
+        $stmt = $conn->prepare("UPDATE orders SET rating = ? WHERE id = ?");
+        $stmt->bind_param("ii", $rating, $order_id);
+        $stmt->execute();
+        echo json_encode(['success' => true, 'message' => 'Terima kasih atas penilaian anda.']);
 
     } else {
         echo json_encode(['success' => false, 'message' => 'Aksi tidak dikenali']);

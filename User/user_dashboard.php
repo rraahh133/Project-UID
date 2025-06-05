@@ -5,6 +5,7 @@ if (!$user) {
     header("Location: ../auth.php");
     exit;
 }
+
 ?>
 
 
@@ -43,7 +44,7 @@ if (!$user) {
                     <div class="flex items-center gap-8 mb-8">
                         <img src="<?= $user['info_profile_picture'] ? 'data:image/jpeg;base64,' . $user['info_profile_picture'] : 'https://storage.googleapis.com/a1aa/image/cCYjTRgvAFZBA5oP1xaxRnauVzPZZiKo62ESgUGl9aVxeG7JA.jpg' ?>" class="w-36 h-36 rounded-full border shadow">
                         <div>
-                            <h2 class="text-2xl font-bold"><?= htmlspecialchars($user['name'] ?? 'User') ?></h2>
+                            <h2 class="text-2xl font-bold"><?= htmlspecialchars($user['info_name'] ?? 'User') ?></h2>
                             <p class="text-gray-600"><?= htmlspecialchars($user['user_email'] ?? '-') ?></p>
                         </div>
                     </div>
